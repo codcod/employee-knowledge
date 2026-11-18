@@ -136,3 +136,4 @@ ls development/decisions/0009-ontology-namespace.md
 - 2026-11-18 — applicability gate (fresh sub-agent): no blocking findings. F1 (Task 3 would use a private loader) → inline; F2 (§10 tree lacks LICENSE) → inline; F3 (acceptance grep narrower than its wording; the leftover example.com strings are synthetic emails) → note-and-close. Routing approved by the owner
 - 2026-11-18 — plan amended inline: Task 3 reads employees.ttl via importlib.resources rather than the private _load (gate F1); Task 4 adds LICENSE to the architecture §10 tree (gate F2)
 - 2026-11-18 — READY → IN DEVELOPMENT: picked up
+- 2026-11-18 — IN DEVELOPMENT → IN REVIEW: acceptance green
