@@ -116,3 +116,4 @@ No operator-facing behaviour changes, so `docs/` stays as it is; it does not men
 - 2026-11-18 — TO DO → READY: plan complete
 - 2026-11-18 — plan amended inline: Task 3 builds the wheel from a clean temp copy (a stale build/ or egg-info made it pass falsely) and compares resolved paths; applicability gate found 6 non-blocking issues: 2 fixed inline, 1 absorbed by EK-013 (old ontology path in its description), 3 noted and closed
 - 2026-11-18 — READY → IN DEVELOPMENT: picked up, branch feat/EK-011-package-ontology
+- 2026-11-18 — IN DEVELOPMENT → IN REVIEW: acceptance green
