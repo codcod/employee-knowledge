@@ -73,11 +73,12 @@ Replace `https://example.org/employee-knowledge/ontology` with `https://w3id.org
 Then `git grep -n "example.org/employee-knowledge"` must print nothing outside `tickets/`.
 
 #### Task 3 — Namespace regression test
-In `tests/test_validation.py` (or the nearest existing ontology test), add one test. It loads `employees.ttl` through the packaged loader and asserts two things: the single `owl:Ontology` subject equals `str(EK).rstrip("#")`, and `str(EK)` starts with `https://w3id.org/employee-knowledge/`. The test catches the code constant and the TTL drifting apart.
+In `tests/test_validation.py` (or the nearest existing ontology test), add one test. It parses `importlib.resources.files("ek") / "ontology" / "employees.ttl"` directly, not through the private `ek.validation._load`, and asserts two things: the single `owl:Ontology` subject equals `str(EK).rstrip("#")`, and `str(EK)` starts with `https://w3id.org/employee-knowledge/`. The test catches the code constant and the TTL drifting apart.
 
 #### Task 4 — ADR-0009 and architecture
 - New `development/decisions/0009-ontology-namespace.md`, Status Accepted (2026-11-18), Related ADR-0001. It has the sections Context, Decision, Alternatives considered, Consequences and Migration implications. Context: the example.org placeholder, and why the company-domain answer conflicts with keeping the project generic. Decision: decisions 3, 4 and 6. Alternatives: company domain (ties the generic project to one organisation), own domain (renewal risk), slash IRIs (a needless change of style), moving the URNs too (cost, and no external consumer). Consequences: the owner registers the w3id redirect before IRIs are published. Migration: delete stores and re-ingest, as decision 7 says.
 - `development/decisions/README.md`: add an index row for 0009.
+- `development/architecture.md` §10: add `├── LICENSE` to the repository tree, next to `README.md`.
 - `development/architecture.md` §13 Q14: rewrite it per decision 8, for example: "*Decided (2026-11-18):* `https://w3id.org/employee-knowledge/ontology#` (ADR-0009), replacing the earlier company-domain answer, which would tie the generic project to one organisation."
 
 ### Acceptance test
@@ -132,3 +133,6 @@ ls development/decisions/0009-ontology-namespace.md
 - 2026-11-18 — EK-011 review: path corrected to src/ek/ontology/ (EK-011 F2); when adding the licence, extend the file list copied by the `wheel` fixture in tests/test_packaging.py, or the wheel build breaks if pyproject names a licence file (EK-011 F3)
 - 2026-11-18 — refined: owner chose MIT (holder "The Employee Knowledge contributors"), namespace https://w3id.org/employee-knowledge/ontology#, URN instance IRIs kept; plan written
 - 2026-11-18 — TO DO → READY: plan complete
+- 2026-11-18 — applicability gate (fresh sub-agent): no blocking findings. F1 (Task 3 would use a private loader) → inline; F2 (§10 tree lacks LICENSE) → inline; F3 (acceptance grep narrower than its wording; the leftover example.com strings are synthetic emails) → note-and-close. Routing approved by the owner
+- 2026-11-18 — plan amended inline: Task 3 reads employees.ttl via importlib.resources rather than the private _load (gate F1); Task 4 adds LICENSE to the architecture §10 tree (gate F2)
+- 2026-11-18 — READY → IN DEVELOPMENT: picked up
