@@ -8,17 +8,13 @@ assertion. Validation never changes trust state.
 import functools
 import typing as tp
 from dataclasses import dataclass
-from pathlib import Path
+from importlib.resources import files
 
 from pyshacl import validate as shacl_validate
 from rdflib import Graph, URIRef
 from rdflib.namespace import RDF, RDFS, SH
 
 from .constants import EK
-
-# ponytail: resolves ontology/ from the source tree; works for editable installs only.
-# Package the .ttl files as package data when the project is distributed as a wheel.
-ONTOLOGY_DIR = Path(__file__).resolve().parents[2] / "ontology"
 
 FindingKind = tp.Literal["model", "value"]
 
@@ -34,7 +30,8 @@ class Finding:
 
 @functools.cache
 def _load(name: str) -> Graph:
-    return Graph().parse(ONTOLOGY_DIR / name, format="turtle")
+    text = (files("ek") / "ontology" / name).read_text(encoding="utf-8")
+    return Graph().parse(data=text, format="turtle")
 
 
 def property_range(predicate: URIRef) -> URIRef:

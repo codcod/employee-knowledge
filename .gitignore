@@ -8,6 +8,8 @@ data/
 reports/
 *.log
 *.egg-info/
+build/
+dist/
 config/sources.toml
 
 # AI

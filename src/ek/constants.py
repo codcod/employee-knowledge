@@ -5,7 +5,7 @@ TRUSTED_GRAPH = URIRef("urn:employee-knowledge:graph:trusted")
 UNTRUSTED_GRAPH = URIRef("urn:employee-knowledge:graph:untrusted")
 AUDIT_GRAPH = URIRef("urn:employee-knowledge:graph:audit")
 
-# Configuration field name -> assertable property (ontology/employees.ttl).
+# Configuration field name -> assertable property (src/ek/ontology/employees.ttl).
 FIELD_PREDICATES = {
     "full_name": EK.fullName,
     "work_email": EK.workEmail,

@@ -19,6 +19,9 @@ employee-knowledge = "ek.cli:app"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+ek = ["ontology/*.ttl"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
