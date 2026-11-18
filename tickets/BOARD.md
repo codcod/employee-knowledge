@@ -45,8 +45,11 @@ Last updated: 2026-11-18
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
+| EK-011 | Package the ontology so ek installs as a regular dependency | high | low | S | [] |  |
+| EK-013 | Choose a licence and a project-owned ontology namespace | high | low | S | [] |  |
 | EK-001 | Confirm architecture decisions and domain vocabulary with the data owner | high | medium | M | [] |  |
 | EK-005 | Add trusted-only and evidence-inclusive query interfaces | high | medium | M | [] |  |
+| EK-012 | Add an extension point for third-party source adapters | high | medium | M | [] |  |
 | EK-003 | Add data-quality and freshness findings | high | medium-high | M-L | [] |  |
 | EK-004 | Define attribute-level source-authority policy model | high | high | L | [] |  |
 | EK-002 | Run tests and lint in GitHub Actions | medium | low | S | [] |  |
