@@ -19,7 +19,7 @@ def wheel(tmp_path_factory) -> Path:
     # Build from a clean copy: a stale build/ or egg-info in a dev tree lets
     # setuptools reuse old files, so the test would pass with package-data removed.
     src = tmp_path_factory.mktemp("project")
-    for name in ("pyproject.toml", "README.md"):
+    for name in ("pyproject.toml", "README.md", "LICENSE"):
         shutil.copy(ROOT / name, src)
     shutil.copytree(
         ROOT / "src",
@@ -43,6 +43,14 @@ def test_wheel_contains_ontology(wheel):
     names = zipfile.ZipFile(wheel).namelist()
     assert "ek/ontology/employees.ttl" in names
     assert "ek/ontology/shapes.ttl" in names
+
+
+def test_wheel_carries_licence(wheel):
+    whl = zipfile.ZipFile(wheel)
+    names = whl.namelist()
+    assert any(n.endswith(".dist-info/licenses/LICENSE") for n in names)
+    (metadata,) = [n for n in names if n.endswith(".dist-info/METADATA")]
+    assert "License-Expression: MIT" in whl.read(metadata).decode()
 
 
 def test_ingests_from_built_wheel(wheel, tmp_path):
