@@ -63,8 +63,9 @@ In `src/ek/validation.py`: delete `ONTOLOGY_DIR`, its `ponytail:` comment and th
 
 #### Task 3 — Wheel acceptance test
 New `tests/test_packaging.py` (synthetic examples only):
-- `test_wheel_contains_ontology`: run `uv build --wheel --out-dir <tmp_path>` from the repo root (`subprocess.run(..., check=True)`), open the single `.whl` with `zipfile`, and assert that `ek/ontology/employees.ttl` and `ek/ontology/shapes.ttl` are present.
-- `test_ingests_from_built_wheel`: extract that wheel into `tmp_path / "site"`, then run `sys.executable -c <script>` with `cwd=tmp_path` and `EMPLOYEE_KNOWLEDGE_STORE=tmp_path/"store.trig"`. The script runs `sys.path.insert(0, site)`, imports `ek`, asserts `ek.__file__` is under `site` (proving it is not the editable source tree), and then invokes `ek.cli.app` through `typer.testing.CliRunner` with `ingest-excel <repo>/examples/employees.xlsx --source-id hr-export --config <repo>/examples/sources.toml`, asserting exit code 0. The test then asserts the subprocess succeeded and that the store file exists and is not empty.
+- Build from a clean copy, not the repo root: a stale `build/lib` or `src/*.egg-info` in a dev tree makes setuptools reuse old files, so the test passes even with the package-data entry removed (reproduced at the applicability gate). Copy `pyproject.toml`, `README.md` and `src/` (ignoring `*.egg-info` and `__pycache__`) into a `tmp_path_factory` directory and run `uv build --wheel --out-dir <tmp>` there. This also keeps the test from writing `build/` into the repo.
+- `test_wheel_contains_ontology`: run that build (`subprocess.run(..., check=True)`), open the single `.whl` with `zipfile`, and assert that `ek/ontology/employees.ttl` and `ek/ontology/shapes.ttl` are present.
+- `test_ingests_from_built_wheel`: extract that wheel into `tmp_path / "site"`, then run `sys.executable -c <script>` with `cwd=tmp_path` and `EMPLOYEE_KNOWLEDGE_STORE=tmp_path/"store.trig"`. The script runs `sys.path.insert(0, site)`, imports `ek`, asserts `Path(ek.__file__).resolve().is_relative_to(site.resolve())` (resolved on both sides, because macOS `/private/tmp` symlinks break a plain prefix check) (proving it is not the editable source tree), and then invokes `ek.cli.app` through `typer.testing.CliRunner` with `ingest-excel <repo>/examples/employees.xlsx --source-id hr-export --config <repo>/examples/sources.toml`, asserting exit code 0. The test then asserts the subprocess succeeded and that the store file exists and is not empty.
 - Share the built wheel between the two tests with a module-scoped fixture (`tmp_path_factory`), so the wheel is built once.
 
 #### Task 4 — Prose paths
@@ -113,3 +114,5 @@ No operator-facing behaviour changes, so `docs/` stays as it is; it does not men
 
 - 2026-11-18 — created (TO DO). source: chat: found while checking adapter wiring for a downstream package
 - 2026-11-18 — TO DO → READY: plan complete
+- 2026-11-18 — plan amended inline: Task 3 builds the wheel from a clean temp copy (a stale build/ or egg-info made it pass falsely) and compares resolved paths; applicability gate found 6 non-blocking issues: 2 fixed inline, 1 absorbed by EK-013 (old ontology path in its description), 3 noted and closed
+- 2026-11-18 — READY → IN DEVELOPMENT: picked up, branch feat/EK-011-package-ontology

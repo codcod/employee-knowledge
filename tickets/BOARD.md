@@ -13,10 +13,11 @@ Last updated: 2026-11-18
 
 ## IN DEVELOPMENT
 
-### employee-knowledge (0/1)
+### employee-knowledge (1/1)
 
 | id | title | depends-on |
 |---|---|---|
+| EK-011 | Package the ontology so ek installs as a regular dependency | [] |
 
 ## IN REVIEW
 
@@ -38,7 +39,6 @@ Last updated: 2026-11-18
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
-| EK-011 | Package the ontology so ek installs as a regular dependency | high | low | S | [] |  |
 
 ## TO DO (impact order, per child)
 
