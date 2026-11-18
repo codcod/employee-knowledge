@@ -64,7 +64,7 @@ Last updated: 2026-11-18
 
 | id | title | merged |
 |---|---|---|
-| EK-011 | Package the ontology so ek installs as a regular dependency | no — publish-gated |
+| EK-011 | Package the ontology so ek installs as a regular dependency | yes — merged to main (local fast-forward, no MR, no remote; 6f307c1..4f023ea) |
 
 ## DROPPED
 
