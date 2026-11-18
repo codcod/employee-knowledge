@@ -52,8 +52,8 @@ def test_no_credentials_in_tracked_text_files():
     for path in tracked():
         try:
             text = (ROOT / path).read_text(encoding="utf-8")
-        except (UnicodeDecodeError, FileNotFoundError):
-            continue  # binary, or deleted but not yet committed
+        except (UnicodeDecodeError, FileNotFoundError, IsADirectoryError):
+            continue  # binary, deleted but not yet committed, or a directory symlink
         hits += [f"{path}:{m.group(0)[:20]}" for m in SECRETS.finditer(text)]
     assert hits == []
 
