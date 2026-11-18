@@ -471,9 +471,6 @@ employee-knowledge/
 │   ├── architecture.md        # this document (normative)
 │   ├── roadmap.md             # milestones and task backlog
 │   └── decisions/             # one ADR per file
-├── ontology/
-│   ├── employees.ttl
-│   └── shapes.ttl
 ├── examples/                  # synthetic data only
 │   ├── README.md
 │   ├── employees.xlsx
@@ -486,6 +483,7 @@ employee-knowledge/
 │   │   └── connectors.py      # disabled Confluence/Jira/Power BI placeholders
 │   ├── config.py              # sources.toml loader (ADR-0007)
 │   ├── graph/store.py
+│   ├── ontology/              # employees.ttl, shapes.ttl (package data)
 │   ├── identity.py
 │   ├── ingest.py
 │   ├── reconcile.py

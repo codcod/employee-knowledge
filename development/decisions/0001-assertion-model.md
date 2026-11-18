@@ -41,7 +41,7 @@ often*.
   (`prov:wasGeneratedBy` the ingestion run). Observations live in run graphs (ADR-0003).
 - Review decisions are `ek:ReviewEvent` resources of type `prov:Activity`, stored in the
   audit graph (ADR-0002).
-- Every class and property named here is defined in `ontology/employees.ttl`.
+- Every class and property named here is defined in `src/ek/ontology/employees.ttl`.
 
 URI patterns:
 

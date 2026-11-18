@@ -53,9 +53,9 @@ not a replacement.
   or title similarity. Leave ambiguous matches unresolved. (§4.3)
 - [ ] **Ontology first.** Before adding an employee attribute: check for an equivalent
   property, review its meaning and datatype, decide whether it belongs in the ontology,
-  update `ontology/employees.ttl` and `ontology/shapes.ttl`, add tests and docs. Map
-  source-specific field names onto the common ontology; never add a property for one
-  source's naming. Structural validity is not correctness. (§4.4)
+  update `src/ek/ontology/employees.ttl` and `src/ek/ontology/shapes.ttl`, add tests
+  and docs. Map source-specific field names onto the common ontology; never add a
+  property for one source's naming. Structural validity is not correctness. (§4.4)
 - [ ] **Read-only adapters.** Adapters retrieve, keep source identifiers and versions,
   normalise and give provenance. They never modify sources, decide trust, pick between
   conflicting values, discard source information or embed credentials. Keep

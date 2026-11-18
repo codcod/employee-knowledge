@@ -19,7 +19,7 @@ Two kinds of failure need different handling:
 
 ## Decision
 
-`ontology/shapes.ttl` defines two groups of shapes.
+`src/ek/ontology/shapes.ttl` defines two groups of shapes.
 
 **Model shapes** (one per class, `sh:targetClass`):
 
