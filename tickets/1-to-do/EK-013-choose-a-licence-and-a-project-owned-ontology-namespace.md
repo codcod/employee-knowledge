@@ -17,7 +17,7 @@ After this ships, the repository has a licence that allows closed internal modif
 
 ## Description
 
-Required before the first public push. The licence should be permissive (Apache-2.0 or MIT) so organisations can run modified internal copies. The namespace is `https://example.org/employee-knowledge/ontology#` (`ek/constants.py`, `ontology/*.ttl`). The earlier decision to use a company domain (architecture §13) conflicts with keeping the project generic, so it is reopened: use a domain or persistent ID the project controls, such as a `w3id.org` ID. Changing it later means deleting stores and re-ingesting (ADR-0001).
+Required before the first public push. The licence should be permissive (Apache-2.0 or MIT) so organisations can run modified internal copies. The namespace is `https://example.org/employee-knowledge/ontology#` (`ek/constants.py`, `src/ek/ontology/*.ttl`). The earlier decision to use a company domain (architecture §13) conflicts with keeping the project generic, so it is reopened: use a domain or persistent ID the project controls, such as a `w3id.org` ID. Changing it later means deleting stores and re-ingesting (ADR-0001).
 
 Soft couplings: EK-001 (domain vocabulary), EK-002 (CI runs after the first push).
 
@@ -34,3 +34,4 @@ Acceptance: a LICENSE file and `license` in `pyproject.toml`; an ADR recording t
 ## History
 
 - 2026-11-18 — created (TO DO). source: chat: owner plans open-source release with a closed downstream copy
+- 2026-11-18 — EK-011 review: path corrected to src/ek/ontology/ (EK-011 F2); when adding the licence, extend the file list copied by the `wheel` fixture in tests/test_packaging.py, or the wheel build breaks if pyproject names a licence file (EK-011 F3)

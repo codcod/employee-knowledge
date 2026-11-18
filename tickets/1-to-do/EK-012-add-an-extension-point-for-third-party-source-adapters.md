@@ -25,6 +25,8 @@ Today the seam exists only at library level: an adapter returns `ReadResult` and
 
 Also open, and shared with EK-007 to EK-009: `ReadResult` and the SHACL shapes require `ek:fileName` and `ek:sha256`, which only fits file sources. API sources need a source-version reference without fabricating provenance; that needs an ADR. Out of scope: extending the ontology from outside (new attributes still go through the ontology-first rule).
 
+Docs item (folded from EK-011 review, F4): document how a downstream package depends on ek (wheel, or `uv add "employee-knowledge @ git+<repo-url>@<tag>"`) alongside the adapter extension docs.
+
 Soft couplings: EK-011 (packaging), EK-007, EK-008, EK-009 (built-in adapters should use the same mechanism), EK-010 (onboarding docs).
 
 Acceptance: a test package registers a synthetic adapter kind; `sources.toml` accepts it; one generic CLI command ingests it with full provenance and validation; unknown kinds are still refused; built-in Excel ingestion is unchanged.
@@ -40,3 +42,4 @@ Acceptance: a test package registers a synthetic adapter kind; `sources.toml` ac
 ## History
 
 - 2026-11-18 — created (TO DO). source: chat: found while checking adapter wiring for a downstream package
+- 2026-11-18 — EK-011 review: folded docs item F4 (how a downstream package depends on ek)
