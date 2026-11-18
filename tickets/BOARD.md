@@ -20,11 +20,10 @@ Last updated: 2026-11-18
 
 ## IN REVIEW
 
-### employee-knowledge (1/1)
+### employee-knowledge (0/1)
 
 | id | title | depends-on |
 |---|---|---|
-| EK-013 | Choose a licence and a project-owned ontology namespace | [] |
 
 ## REWORK
 
@@ -65,6 +64,7 @@ Last updated: 2026-11-18
 | id | title | merged |
 |---|---|---|
 | EK-011 | Package the ontology so ek installs as a regular dependency | yes — merged to main (local fast-forward, no MR, no remote; 6f307c1..4f023ea) |
+| EK-013 | Choose a licence and a project-owned ontology namespace | no — publish-gated |
 
 ## DROPPED
 
