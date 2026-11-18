@@ -1,0 +1,132 @@
+@prefix ek: <https://example.org/employee-knowledge/ontology#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Structural validation (ADR-0006).
+# Model shapes: a violation is a bug in this system; the run aborts.
+# Value shapes (typed ek:ValueShape): a violation is a source data problem; it is
+# recorded on the observation and the assertion is kept.
+# Validation never changes trust state.
+
+ek:ValueShape a rdfs:Class ;
+    rdfs:subClassOf sh:NodeShape ;
+    rdfs:comment "Marks shapes whose violations are source data problems." .
+
+# ---------------------------------------------------------------------------
+# Model shapes
+# ---------------------------------------------------------------------------
+
+ek:EmployeeShape a sh:NodeShape ;
+    sh:targetClass ek:Employee ;
+    sh:property [ sh:path ek:employeeId ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "\\S" ] ;
+    sh:property [ sh:path ek:issuer ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "\\S" ] .
+
+ek:FactAssertionShape a sh:NodeShape ;
+    sh:targetClass ek:FactAssertion ;
+    sh:property [ sh:path ek:aboutEmployee ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:class ek:Employee ] ;
+    sh:property [ sh:path ek:predicate ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:class ek:AssertableProperty ] ;
+    sh:property [ sh:path ek:value ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:nodeKind sh:Literal ] ;
+    sh:property [ sh:path ek:fromSource ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:class ek:Source ] .
+
+ek:ObservationShape a sh:NodeShape ;
+    sh:targetClass ek:Observation ;
+    sh:property [ sh:path ek:ofAssertion ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:class ek:FactAssertion ] ;
+    sh:property [ sh:path prov:wasGeneratedBy ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:class ek:IngestionRun ] ;
+    sh:property [ sh:path ek:sourceRecordKey ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "\\S" ] ;
+    sh:property [ sh:path ek:sourceReference ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "\\S" ] ;
+    sh:property [ sh:path ek:rawValue ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ] ;
+    sh:property [ sh:path ek:observedAt ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ek:validationResult ; sh:maxCount 1 ;
+                  sh:in ( ek:Conforms ek:Violation ) ] ;
+    sh:property [ sh:path ek:validationMessage ; sh:datatype xsd:string ] .
+
+ek:IngestionRunShape a sh:NodeShape ;
+    sh:targetClass ek:IngestionRun ;
+    sh:property [ sh:path ek:forSource ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:class ek:Source ] ;
+    sh:property [ sh:path ek:mappingVersion ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "\\S" ] ;
+    sh:property [ sh:path prov:startedAtTime ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path prov:endedAtTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path prov:used ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:node ek:SourceFileShape ] ;
+    sh:property [ sh:path ek:runStatus ; sh:maxCount 1 ; sh:in ( ek:Completed ) ] .
+
+ek:SourceFileShape a sh:NodeShape ;
+    sh:property [ sh:path ek:fileName ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "\\S" ] ;
+    sh:property [ sh:path ek:sha256 ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "^[0-9a-f]{64}$" ] .
+
+ek:QuarantinedRecordShape a sh:NodeShape ;
+    sh:targetClass ek:QuarantinedRecord ;
+    sh:property [ sh:path prov:wasGeneratedBy ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:class ek:IngestionRun ] ;
+    sh:property [ sh:path ek:sourceReference ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "\\S" ] ;
+    sh:property [ sh:path ek:quarantineReason ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "\\S" ] .
+
+ek:ReviewEventShape a sh:NodeShape ;
+    sh:targetClass ek:ReviewEvent ;
+    sh:property [ sh:path prov:used ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:class ek:FactAssertion ] ;
+    sh:property [ sh:path ek:reviewAction ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:in ( ek:Accept ek:Reject ek:RequestEvidence ek:Supersede ek:Reopen ) ] ;
+    sh:property [ sh:path ek:fromState ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:class ek:ReviewState ] ;
+    sh:property [ sh:path ek:toState ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:class ek:ReviewState ] ;
+    sh:property [ sh:path ek:reviewer ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "\\S" ] ;
+    sh:property [ sh:path ek:reviewReason ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "\\S" ] ;
+    sh:property [ sh:path ek:policyVersion ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:string ; sh:pattern "\\S" ] ;
+    sh:property [ sh:path ek:sequence ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:integer ] ;
+    sh:property [ sh:path prov:endedAtTime ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ek:supersededBy ; sh:maxCount 1 ; sh:class ek:FactAssertion ] .
+
+# ---------------------------------------------------------------------------
+# Value shapes
+# ---------------------------------------------------------------------------
+
+# One generic check for every assertable property: the value must be a non-blank
+# literal of the property's rdfs:range. Add property-specific value shapes (formats,
+# controlled vocabularies) only once the data owner defines them.
+ek:AssertionValueShape a sh:NodeShape, ek:ValueShape ;
+    sh:targetClass ek:FactAssertion ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "Value {?value} of {?property} is not a non-blank {?range}" ;
+        sh:select """
+            SELECT $this ?value ?property ?range
+            WHERE {
+                $this <https://example.org/employee-knowledge/ontology#predicate> ?property ;
+                      <https://example.org/employee-knowledge/ontology#value> ?value .
+                ?property <http://www.w3.org/2000/01/rdf-schema#range> ?range .
+                FILTER (
+                    !isLiteral(?value)
+                    || datatype(?value) != ?range
+                    || !regex(str(?value), "\\\\S")
+                )
+            }
+        """ ;
+    ] .

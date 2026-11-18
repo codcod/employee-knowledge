@@ -1,0 +1,54 @@
+# Example source configuration (synthetic).
+# Copy to config/sources.toml (git-ignored) for local use.
+# Trust is never configured per source: every ingested assertion starts untrusted.
+
+[[sources]]
+id = "hr-export"
+kind = "excel"
+issuer = "example-hr"   # who issues the employee IDs in this source (ADR-0004)
+sheet = "Employees"
+mapping_version = "1"
+
+[sources.mapping]       # ontology field = source column header
+employee_id = "employee_id"
+full_name = "full_name"
+work_email = "work_email"
+department = "department"
+job_title = "job_title"
+manager_employee_id = "manager_employee_id"
+location = "location"
+employment_status = "employment_status"
+
+[[sources]]
+id = "people-directory"
+kind = "excel"
+issuer = "example-hr"   # same issuer as hr-export, so the same people are compared
+sheet = "Directory"
+mapping_version = "1"
+
+[sources.mapping]       # different headers, same ontology fields
+employee_id = "Staff ID"
+full_name = "Name"
+work_email = "Email"
+department = "Team"
+job_title = "Title"
+location = "Office"
+
+[[sources]]
+id = "confluence-people-directory"
+kind = "confluence"
+enabled = false
+allowed_spaces = []
+
+[[sources]]
+id = "jira-user-directory"
+kind = "jira"
+enabled = false
+allowed_projects = []
+
+[[sources]]
+id = "powerbi-people-report"
+kind = "powerbi"
+enabled = false
+workspace_id = ""
+dataset_id = ""

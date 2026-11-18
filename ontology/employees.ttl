@@ -1,0 +1,271 @@
+@prefix ek: <https://example.org/employee-knowledge/ontology#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Employee Knowledge ontology. The model is defined in development/decisions/ ADR-0001
+# to ADR-0004. The namespace is provisional (architecture §13, question 14).
+
+<https://example.org/employee-knowledge/ontology> a owl:Ontology ;
+    rdfs:label "Employee Knowledge Ontology" ;
+    owl:versionInfo "0.2.0" .
+
+# ---------------------------------------------------------------------------
+# Employee identity (ADR-0004)
+# ---------------------------------------------------------------------------
+
+ek:Employee a owl:Class ;
+    rdfs:label "Employee" ;
+    rdfs:comment "A person identified by an employee ID from one issuer. Carries identity only; everything a source says about the person is an ek:FactAssertion." .
+
+ek:employeeId a owl:DatatypeProperty ;
+    rdfs:label "employee ID" ;
+    rdfs:comment "The employee identifier exactly as issued, trimmed. Unique only together with ek:issuer." ;
+    rdfs:domain ek:Employee ;
+    rdfs:range xsd:string .
+
+ek:issuer a owl:DatatypeProperty ;
+    rdfs:label "issuer" ;
+    rdfs:comment "Who issues the employee ID, as configured per source. IDs from different issuers are never merged automatically." ;
+    rdfs:domain ek:Employee ;
+    rdfs:range xsd:string .
+
+# ---------------------------------------------------------------------------
+# Assertable employee properties (ADR-0001)
+# ---------------------------------------------------------------------------
+
+ek:AssertableProperty a owl:Class ;
+    rdfs:subClassOf owl:DatatypeProperty ;
+    rdfs:label "assertable property" ;
+    rdfs:comment "An employee attribute a source can make claims about. Used as the object of ek:predicate on an ek:FactAssertion, never directly on an ek:Employee. The rdfs:range is the required datatype of ek:value." .
+
+ek:fullName a ek:AssertableProperty ;
+    rdfs:label "full name" ;
+    rdfs:comment "The person's full or display name as the source records it. Never an identifier." ;
+    rdfs:range xsd:string .
+
+ek:workEmail a ek:AssertableProperty ;
+    rdfs:label "work email" ;
+    rdfs:comment "Work email address as the source records it. Format rules are not yet defined (architecture §13, question 11)." ;
+    rdfs:range xsd:string .
+
+ek:department a ek:AssertableProperty ;
+    rdfs:label "department" ;
+    rdfs:comment "Department or organisational unit as the source names it." ;
+    rdfs:range xsd:string .
+
+ek:jobTitle a ek:AssertableProperty ;
+    rdfs:label "job title" ;
+    rdfs:comment "Job title as the source records it." ;
+    rdfs:range xsd:string .
+
+ek:managerEmployeeId a ek:AssertableProperty ;
+    rdfs:label "manager employee ID" ;
+    rdfs:comment "Employee ID of the person's manager, from the same issuer as the record. Provisional: may become a relationship (architecture §13, question 15)." ;
+    rdfs:range xsd:string .
+
+ek:location a ek:AssertableProperty ;
+    rdfs:label "work location" ;
+    rdfs:comment "Work location as the source records it (office, city or 'Remote')." ;
+    rdfs:range xsd:string .
+
+ek:employmentStatus a ek:AssertableProperty ;
+    rdfs:label "employment status" ;
+    rdfs:comment "Employment status as the source records it. No controlled vocabulary yet (architecture §13, question 11)." ;
+    rdfs:range xsd:string .
+
+# ---------------------------------------------------------------------------
+# Assertions (ADR-0001)
+# ---------------------------------------------------------------------------
+
+ek:FactAssertion a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "fact assertion" ;
+    rdfs:comment "One source's claim that one property of one employee has one value. Immutable; trust state comes from review events (ADR-0002)." .
+
+ek:aboutEmployee a owl:ObjectProperty ;
+    rdfs:label "about employee" ;
+    rdfs:domain ek:FactAssertion ;
+    rdfs:range ek:Employee .
+
+ek:predicate a owl:ObjectProperty ;
+    rdfs:label "predicate" ;
+    rdfs:comment "The assertable property the claim is about." ;
+    rdfs:domain ek:FactAssertion ;
+    rdfs:range ek:AssertableProperty .
+
+ek:value a owl:DatatypeProperty ;
+    rdfs:label "value" ;
+    rdfs:comment "The normalised value, typed with the rdfs:range of ek:predicate." ;
+    rdfs:domain ek:FactAssertion .
+
+ek:fromSource a owl:ObjectProperty ;
+    rdfs:label "from source" ;
+    rdfs:domain ek:FactAssertion ;
+    rdfs:range ek:Source .
+
+ek:Source a owl:Class ;
+    rdfs:label "source" ;
+    rdfs:comment "A configured source of employee information (ADR-0007). Never trusted as a whole." .
+
+# ---------------------------------------------------------------------------
+# Ingestion runs and observations (ADR-0003)
+# ---------------------------------------------------------------------------
+
+ek:IngestionRun a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "ingestion run" ;
+    rdfs:comment "One execution of ingestion for one source. Its provenance lives in its own named graph." .
+
+ek:forSource a owl:ObjectProperty ;
+    rdfs:label "for source" ;
+    rdfs:domain ek:IngestionRun ;
+    rdfs:range ek:Source .
+
+ek:mappingVersion a owl:DatatypeProperty ;
+    rdfs:label "mapping version" ;
+    rdfs:domain ek:IngestionRun ;
+    rdfs:range xsd:string .
+
+ek:runStatus a owl:ObjectProperty ;
+    rdfs:label "run status" ;
+    rdfs:comment "Written last; a run without ek:Completed is incomplete and ignored." ;
+    rdfs:domain ek:IngestionRun ;
+    rdfs:range ek:RunStatus .
+
+ek:RunStatus a owl:Class ; rdfs:label "run status" .
+ek:Completed a ek:RunStatus ; rdfs:label "completed" .
+
+ek:fileName a owl:DatatypeProperty ;
+    rdfs:label "file name" ;
+    rdfs:comment "Name of the source file used by a run." ;
+    rdfs:range xsd:string .
+
+ek:sha256 a owl:DatatypeProperty ;
+    rdfs:label "SHA-256" ;
+    rdfs:comment "Hex SHA-256 digest of the source file used by a run." ;
+    rdfs:range xsd:string .
+
+ek:Observation a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "observation" ;
+    rdfs:comment "Evidence that a run saw an assertion in a specific source record." .
+
+ek:ofAssertion a owl:ObjectProperty ;
+    rdfs:label "of assertion" ;
+    rdfs:domain ek:Observation ;
+    rdfs:range ek:FactAssertion .
+
+ek:sourceRecordKey a owl:DatatypeProperty ;
+    rdfs:label "source record key" ;
+    rdfs:comment "The source's stable key for the record; part of assertion identity." ;
+    rdfs:domain ek:Observation ;
+    rdfs:range xsd:string .
+
+ek:sourceReference a owl:DatatypeProperty ;
+    rdfs:label "source reference" ;
+    rdfs:comment "Where the evidence is, e.g. workbook#sheet!row. Not part of identity." ;
+    rdfs:range xsd:string .
+
+ek:rawValue a owl:DatatypeProperty ;
+    rdfs:label "raw value" ;
+    rdfs:comment "The source text exactly as read, before normalisation." ;
+    rdfs:domain ek:Observation ;
+    rdfs:range xsd:string .
+
+ek:observedAt a owl:DatatypeProperty ;
+    rdfs:label "observed at" ;
+    rdfs:comment "Observation time supplied by the source. Never defaulted to ingestion time." ;
+    rdfs:domain ek:Observation ;
+    rdfs:range xsd:dateTime .
+
+ek:validationResult a owl:ObjectProperty ;
+    rdfs:label "validation result" ;
+    rdfs:domain ek:Observation ;
+    rdfs:range ek:ValidationOutcome .
+
+ek:validationMessage a owl:DatatypeProperty ;
+    rdfs:label "validation message" ;
+    rdfs:domain ek:Observation ;
+    rdfs:range xsd:string .
+
+ek:ValidationOutcome a owl:Class ; rdfs:label "validation outcome" .
+ek:Conforms a ek:ValidationOutcome ; rdfs:label "conforms" .
+ek:Violation a ek:ValidationOutcome ; rdfs:label "violation" .
+
+ek:QuarantinedRecord a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "quarantined record" ;
+    rdfs:comment "A source record that could not become assertions, kept with its reason." .
+
+ek:quarantineReason a owl:DatatypeProperty ;
+    rdfs:label "quarantine reason" ;
+    rdfs:domain ek:QuarantinedRecord ;
+    rdfs:range xsd:string .
+
+# ---------------------------------------------------------------------------
+# Review (ADR-0002)
+# ---------------------------------------------------------------------------
+
+ek:ReviewEvent a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "review event" ;
+    rdfs:comment "An explicit reviewer decision about one assertion. Append-only; the only record of trust state." .
+
+ek:reviewAction a owl:ObjectProperty ;
+    rdfs:label "review action" ;
+    rdfs:domain ek:ReviewEvent ;
+    rdfs:range ek:ReviewAction .
+
+ek:fromState a owl:ObjectProperty ;
+    rdfs:label "from state" ;
+    rdfs:domain ek:ReviewEvent ;
+    rdfs:range ek:ReviewState .
+
+ek:toState a owl:ObjectProperty ;
+    rdfs:label "to state" ;
+    rdfs:domain ek:ReviewEvent ;
+    rdfs:range ek:ReviewState .
+
+ek:reviewer a owl:DatatypeProperty ;
+    rdfs:label "reviewer" ;
+    rdfs:comment "Local reviewer label. Not authentication or authorisation." ;
+    rdfs:domain ek:ReviewEvent ;
+    rdfs:range xsd:string .
+
+ek:reviewReason a owl:DatatypeProperty ;
+    rdfs:label "review reason" ;
+    rdfs:domain ek:ReviewEvent ;
+    rdfs:range xsd:string .
+
+ek:policyVersion a owl:DatatypeProperty ;
+    rdfs:label "policy version" ;
+    rdfs:comment "Version of the authority policy applied; 'none' until a policy exists." ;
+    rdfs:domain ek:ReviewEvent ;
+    rdfs:range xsd:string .
+
+ek:sequence a owl:DatatypeProperty ;
+    rdfs:label "sequence" ;
+    rdfs:comment "Store-wide, strictly increasing event number." ;
+    rdfs:domain ek:ReviewEvent ;
+    rdfs:range xsd:integer .
+
+ek:supersededBy a owl:ObjectProperty ;
+    rdfs:label "superseded by" ;
+    rdfs:domain ek:ReviewEvent ;
+    rdfs:range ek:FactAssertion .
+
+ek:ReviewAction a owl:Class ; rdfs:label "review action" .
+ek:Accept a ek:ReviewAction ; rdfs:label "accept" .
+ek:Reject a ek:ReviewAction ; rdfs:label "reject" .
+ek:RequestEvidence a ek:ReviewAction ; rdfs:label "request evidence" .
+ek:Supersede a ek:ReviewAction ; rdfs:label "supersede" .
+ek:Reopen a ek:ReviewAction ; rdfs:label "reopen" .
+
+ek:ReviewState a owl:Class ; rdfs:label "review state" .
+ek:Candidate a ek:ReviewState ; rdfs:label "candidate" .
+ek:Accepted a ek:ReviewState ; rdfs:label "accepted" .
+ek:Rejected a ek:ReviewState ; rdfs:label "rejected" .
+ek:NeedsEvidence a ek:ReviewState ; rdfs:label "needs evidence" .
+ek:Superseded a ek:ReviewState ; rdfs:label "superseded" .
