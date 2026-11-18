@@ -21,7 +21,7 @@ Roadmap task: Task-001 in `development/roadmap.md`.
 
 Review the architecture with the employee-data owner. Confirm the employee identifier strategy (HR issues IDs; stability across rehire is still open), the initial employee properties, source naming, timestamp semantics and initial authority assumptions. Record unresolved decisions; do not invent source authority.
 
-The project owner answered §13 questions 1, 3, 4 and 11–16 on 2026-11-18. Questions 2 and 5–10 remain, plus the company domain for the ontology namespace (question 14).
+The project owner answered §13 questions 1, 3, 4 and 11–16 on 2026-11-18. Questions 2 and 5–10 remain. Question 14 (ontology namespace) is reopened and settled by EK-013.
 
 Acceptance: decisions are recorded, ontology terms have definitions, and open questions are explicit.
 
@@ -36,3 +36,4 @@ Acceptance: decisions are recorded, ontology terms have definitions, and open qu
 ## History
 
 - 2026-11-18 — created (TO DO). source: chat: migrated from roadmap Task-001 when Brine was set up
+- 2026-11-18 — EK-013 refinement: Q14 no longer waits on a company domain; namespace moves to w3id.org in EK-013

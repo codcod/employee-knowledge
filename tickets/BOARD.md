@@ -38,6 +38,7 @@ Last updated: 2026-11-18
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
+| EK-013 | Choose a licence and a project-owned ontology namespace | high | low | S | [] |  |
 
 ## TO DO (impact order, per child)
 
@@ -45,7 +46,6 @@ Last updated: 2026-11-18
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
-| EK-013 | Choose a licence and a project-owned ontology namespace | high | low | S | [] |  |
 | EK-001 | Confirm architecture decisions and domain vocabulary with the data owner | high | medium | M | [] |  |
 | EK-005 | Add trusted-only and evidence-inclusive query interfaces | high | medium | M | [] |  |
 | EK-012 | Add an extension point for third-party source adapters | high | medium | M | [] |  |
