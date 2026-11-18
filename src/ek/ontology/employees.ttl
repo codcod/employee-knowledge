@@ -1,15 +1,15 @@
-@prefix ek: <https://example.org/employee-knowledge/ontology#> .
+@prefix ek: <https://w3id.org/employee-knowledge/ontology#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 # Employee Knowledge ontology. The model is defined in development/decisions/ ADR-0001
-# to ADR-0004. The namespace is provisional (architecture §13, question 14).
+# to ADR-0004. Namespace: ADR-0009.
 
-<https://example.org/employee-knowledge/ontology> a owl:Ontology ;
+<https://w3id.org/employee-knowledge/ontology> a owl:Ontology ;
     rdfs:label "Employee Knowledge Ontology" ;
-    owl:versionInfo "0.2.0" .
+    owl:versionInfo "0.3.0" .
 
 # ---------------------------------------------------------------------------
 # Employee identity (ADR-0004)

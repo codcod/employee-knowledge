@@ -1,14 +1,16 @@
 """SHACL shapes and the validator (ADR-0006), on synthetic graphs in the ADR-0001/3 model."""
 
+from importlib.resources import files
+
 import pytest
 from rdflib import Graph, Literal, URIRef
-from rdflib.namespace import PROV, XSD
+from rdflib.namespace import OWL, PROV, RDF, XSD
 
 from ek.constants import EK
 from ek.validation import validate
 
 VALID = """
-@prefix ek: <https://example.org/employee-knowledge/ontology#> .
+@prefix ek: <https://w3id.org/employee-knowledge/ontology#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -152,3 +154,13 @@ def test_conflicting_assertions_are_structurally_valid():
         g.add((other, p, o))
     g.set((other, EK.value, Literal("Product")))
     assert validate(g) == []
+
+
+def test_code_namespace_matches_the_ontology():
+    """EK-013: the EK constant and the ontology IRI must not drift apart."""
+    ttl = (files("ek") / "ontology" / "employees.ttl").read_text(encoding="utf-8")
+    ontologies = set(
+        Graph().parse(data=ttl, format="turtle").subjects(RDF.type, OWL.Ontology)
+    )
+    assert ontologies == {URIRef(str(EK).rstrip("#"))}
+    assert str(EK).startswith("https://w3id.org/employee-knowledge/")

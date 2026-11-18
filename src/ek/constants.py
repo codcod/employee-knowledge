@@ -1,6 +1,6 @@
 from rdflib import Namespace, URIRef
 
-EK = Namespace("https://example.org/employee-knowledge/ontology#")
+EK = Namespace("https://w3id.org/employee-knowledge/ontology#")
 TRUSTED_GRAPH = URIRef("urn:employee-knowledge:graph:trusted")
 UNTRUSTED_GRAPH = URIRef("urn:employee-knowledge:graph:untrusted")
 AUDIT_GRAPH = URIRef("urn:employee-knowledge:graph:audit")

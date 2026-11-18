@@ -1,4 +1,4 @@
-@prefix ek: <https://example.org/employee-knowledge/ontology#> .
+@prefix ek: <https://w3id.org/employee-knowledge/ontology#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -119,8 +119,8 @@ ek:AssertionValueShape a sh:NodeShape, ek:ValueShape ;
         sh:select """
             SELECT $this ?value ?property ?range
             WHERE {
-                $this <https://example.org/employee-knowledge/ontology#predicate> ?property ;
-                      <https://example.org/employee-knowledge/ontology#value> ?value .
+                $this <https://w3id.org/employee-knowledge/ontology#predicate> ?property ;
+                      <https://w3id.org/employee-knowledge/ontology#value> ?value .
                 ?property <http://www.w3.org/2000/01/rdf-schema#range> ?range .
                 FILTER (
                     !isLiteral(?value)
