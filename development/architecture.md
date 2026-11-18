@@ -460,6 +460,7 @@ Current structure. Planned additions are marked.
 ```text
 employee-knowledge/
 ├── README.md
+├── LICENSE                    # MIT
 ├── AGENTS.md                  # rules for coding agents
 ├── pyproject.toml, uv.lock
 ├── .github/workflows/ci.yml   # lint and tests (GitHub Actions)
@@ -566,10 +567,9 @@ keep their decision inline.
 13. Who issues the employee IDs in each source? *Decided (2026-11-18):* an issuer is configured
     per source (the HR system for HR-keyed sources) and IDs from different issuers are
     never merged automatically.
-14. What is the permanent ontology namespace? *Decided (2026-11-18):* a company-owned domain,
-    not yet named. *Provisional default until then:*
-    `https://example.org/employee-knowledge/ontology#`. Change it before any real data
-    is stored.
+14. What is the permanent ontology namespace? *Decided (2026-11-18):*
+    `https://w3id.org/employee-knowledge/ontology#` (ADR-0009), replacing the earlier
+    company-domain answer, which would tie the generic project to one organisation.
 15. Should the manager be modelled as a relationship between employees or as a
     manager-ID value? *Decided (2026-11-18):* a manager-ID string, as the source states it.
     Task-010 resolves it to an employee and reports broken references.

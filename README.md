@@ -84,6 +84,10 @@ Pickle is the development workflow layer, not part of the platform. The board is
 [tickets/BOARD.md](tickets/BOARD.md); tickets are `EK-NNN`. Jira as a data source is
 separate from Pickle's own board.
 
+## Licence
+
+MIT, see [LICENSE](LICENSE).
+
 ## Documentation
 
 - [docs/](docs/): the product and how to operate it ([trust model](docs/trust-model.md),
