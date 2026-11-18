@@ -160,3 +160,4 @@ cost: estimated S, actual S
 - 2026-11-18 — IN REVIEW → DONE: review clean; 1 non-blocking (fixed inline: F1)
 - 2026-11-18 — publish approved by the owner (commits 05030d4, 4167979, 6a6ff33 and MR attributes as presented; keep history). Not pushed: the repository has no git remote yet. Push and open the MR once one is added
 - 2026-11-18 — merged to main (local fast-forward, no MR, no remote; 753a9ca..7de854c)
+- 2026-11-18 — w3id.org registration deferred by the owner; folded into EK-002 as a pre-push step
