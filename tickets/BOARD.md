@@ -38,6 +38,7 @@ Last updated: 2026-11-18
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
+| EK-002 | Run tests and lint in GitHub Actions | medium | low | S | [] |  |
 
 ## TO DO (impact order, per child)
 
@@ -50,7 +51,6 @@ Last updated: 2026-11-18
 | EK-012 | Add an extension point for third-party source adapters | high | medium | M | [] |  |
 | EK-003 | Add data-quality and freshness findings | high | medium-high | M-L | [] |  |
 | EK-004 | Define attribute-level source-authority policy model | high | high | L | [] |  |
-| EK-002 | Run tests and lint in GitHub Actions | medium | low | S | [] |  |
 | EK-010 | Add source onboarding and operational controls | medium | medium | M | [] |  |
 | EK-006 | Design and prototype constrained natural-language-to-SPARQL | medium | high | L | [] |  |
 | EK-007 | Implement Confluence read-only adapter | medium | medium-high | L | [] |  |
