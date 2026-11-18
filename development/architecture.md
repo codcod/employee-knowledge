@@ -48,9 +48,9 @@ Out of scope for the first slice:
   §4.7);
 - committing real employee records, credentials or production graph stores to Git.
 
-Pickle/Brine is the development workflow and ticket-governance layer. It is not the
+Pickle is the development workflow and ticket-governance layer. It is not the
 runtime, data store, ingestion engine or ontology framework. Jira may later be an
-employee-data source; that is separate from Brine's own project board.
+employee-data source; that is separate from Pickle's own project board.
 
 ## 3. Core architectural principles
 
@@ -528,7 +528,7 @@ fact.
 ## 12. Task backlog
 
 The milestones, the Task-001 to Task-018 backlog and the task order are kept in
-[roadmap.md](roadmap.md). Open tasks are tracked as Brine tickets (`EK-NNN`) on
+[roadmap.md](roadmap.md). Open tasks are tracked as Pickle tickets (`EK-NNN`) on
 `tickets/BOARD.md`.
 
 ## 13. Open questions for the project owner

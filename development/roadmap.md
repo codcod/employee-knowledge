@@ -1,6 +1,6 @@
 # Roadmap and task backlog
 
-The plan for milestones and the task descriptions. Status lives on the Brine board
+The plan for milestones and the task descriptions. Status lives on the Pickle board
 (`tickets/BOARD.md`): each open task has one ticket, listed after its heading. Tasks
 finished in M0 are marked done here and have no ticket. Task IDs (`Task-NNN`) and ticket
 IDs (`EK-NNN`) are separate number series.

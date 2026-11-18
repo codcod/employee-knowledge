@@ -17,10 +17,10 @@ and the task backlog are in `development/roadmap.md`; decisions are in
 If a requirement seems to conflict with the architecture, do not pick an interpretation
 silently. Name the conflict and propose an architecture decision.
 
-## 2. Development workflow: Pickle/Brine
+## 2. Development workflow: Pickle
 
-This repository uses Pickle/Brine to organise and govern development work: the board is
-`tickets/BOARD.md` and the rules are in the "Brine (start here)" section at the end of
+This repository uses Pickle to organise and govern development work: the board is
+`tickets/BOARD.md` and the rules are in the Pickle section at the end of
 this file. Ticket IDs are `EK-NNN`. The roadmap's `Task-NNN` items are planning
 descriptions, not tickets; each open task has one EK ticket that names it. Do not copy
 generated board or ticket files from another repository.
@@ -131,7 +131,7 @@ declaring work complete:
 6. Check that the provenance and trust invariants still hold.
 7. Update the relevant documentation.
 8. Record remaining limitations.
-9. Update the Pickle/Brine ticket through its supported workflow.
+9. Update the Pickle ticket through its supported workflow.
 10. Make the work available for review.
 
 Do not claim tests or checks passed unless they were actually run.
