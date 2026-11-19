@@ -13,10 +13,11 @@ Last updated: 2026-11-19
 
 ## IN DEVELOPMENT
 
-### employee-knowledge (0/1)
+### employee-knowledge (1/1)
 
 | id | title | depends-on |
 |---|---|---|
+| EK-001 | Confirm architecture decisions and domain vocabulary with the data owner | [] |
 
 ## IN REVIEW
 
@@ -38,7 +39,6 @@ Last updated: 2026-11-19
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
-| EK-001 | Confirm architecture decisions and domain vocabulary with the data owner | high | low | S | [] |  |
 
 ## TO DO (impact order, per child)
 
