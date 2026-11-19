@@ -173,3 +173,4 @@ cost: estimated S, actual S
 - 2026-11-19 — IN DEVELOPMENT → IN REVIEW: acceptance green
 - 2026-11-19 — IN REVIEW → DONE: review: no blocking findings; F1 fixed inline, F3 folded into EK-014, F2/F4/F5 noted; publish pending owner approval
 - 2026-11-19 — published (owner-approved): pushed 5 bookkeeping commits on `main`, CI https://github.com/codcod/employee-knowledge/actions/runs/44497464568 success. PR https://github.com/codcod/employee-knowledge/pull/2, CI https://github.com/codcod/employee-knowledge/actions/runs/44497516202 success. Merging is the owner's
+- 2026-11-19 — merged to main (PR #2, e3d155b, https://github.com/codcod/employee-knowledge/commit/e3d155b)
