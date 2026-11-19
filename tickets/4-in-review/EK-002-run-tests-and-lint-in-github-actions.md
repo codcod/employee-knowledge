@@ -209,3 +209,4 @@ Remote, at publish (recorded in History):
 - 2026-11-19 — plan amended inline (applicability gate, owner-approved routing): pin `astral-sh/setup-uv@v10.3.3` (no `@v10` major tag exists since v8; blocking as written) in decision 6, Task 2 and the acceptance grep; record the 3 unreachable EK-013 hashes as pre-rebase; commit count 25+1; Task 4.1 jq prints the `ids` sha and `null` via `tostring`; roadmap edit grammar ("carries on")
 - 2026-11-19 — READY → IN DEVELOPMENT: picked up
 - 2026-11-19 — author rewrite done (Task 1): 27 commits on `main` and `feat/EK-011-package-ontology`, author and committer `Nikos` → `codcod`, email unchanged, trees identical. Map of hashes cited in History: 6f307c1 → 6a7c242, 4f023ea → 764e0d9 (EK-011); 753a9ca → cc26497, 7de854c → 6836985 (EK-013); 05030d4, 4167979, 6a6ff33 (EK-013) pre-rebase, no successor
+- 2026-11-19 — IN DEVELOPMENT → IN REVIEW: acceptance green
