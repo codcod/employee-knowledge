@@ -62,7 +62,7 @@ Last updated: 2026-11-19
 
 | id | title | merged |
 |---|---|---|
-| EK-002 | Run tests and lint in GitHub Actions | no — publish-gated |
+| EK-002 | Run tests and lint in GitHub Actions | yes — merged to main (PR #1, e85897b, https://github.com/codcod/employee-knowledge/commit/e85897b) |
 | EK-011 | Package the ontology so ek installs as a regular dependency | yes — merged to main (local fast-forward, no MR, no remote; 6f307c1..4f023ea) |
 | EK-013 | Choose a licence and a project-owned ontology namespace | yes — merged to main (local fast-forward, no MR, no remote; 753a9ca..7de854c) |
 
