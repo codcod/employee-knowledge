@@ -219,7 +219,7 @@ cost: estimated S, actual S
 - [x] Ticket moved to `6-done/` (step 6)
 - [x] Governing documents reconciled (step 7): the branch updates roadmap and architecture §10. No other document cites EK-002's workflow.
 - [x] Impact sweep (step 8): no ticket depends on EK-002 or cites its CI assumptions.
-- [ ] Approval and publish (step 9, Task 4): pending the owner.
+- [x] Approval and publish (step 9, Task 4): the owner approved steps 1–4 and, separately, the w3id pull request. F1 was left as planned (the owner's choice): the repository's default workflow permissions are `read`. The in-tree base check printed nothing before the push.
 
 Note: Task 4.2 pushes `main` before the pull request merges, so the first green run on `main` exercises the old workflow (`checkout@v4`, `setup-uv@v6`, unpinned Python). The new workflow is first proven on the pull-request run.
 
@@ -235,3 +235,4 @@ Note: Task 4.2 pushes `main` before the pull request merges, so the first green 
 - 2026-11-19 — author rewrite done (Task 1): 27 commits on `main` and `feat/EK-011-package-ontology`, author and committer `Nikos` → `codcod`, email unchanged, trees identical. Map of hashes cited in History: 6f307c1 → 6a7c242, 4f023ea → 764e0d9 (EK-011); 753a9ca → cc26497, 7de854c → 6836985 (EK-013); 05030d4, 4167979, 6a6ff33 (EK-013) pre-rebase, no successor
 - 2026-11-19 — IN DEVELOPMENT → IN REVIEW: acceptance green
 - 2026-11-19 — IN REVIEW → DONE: review: no blocking findings; 3 noted (F1, F2, F3); publish (Task 4) pending owner approval
+- 2026-11-19 — published (Task 4, owner-approved). The w3id name was still free (the `ids/` tree is not truncated). Pushed `main`: CI https://github.com/codcod/employee-knowledge/actions/runs/44464155590 success (old workflow). Ruleset `protect main` id 27612142, and the rules on `main` are `deletion` and `non_fast_forward`. EK PR https://github.com/codcod/employee-knowledge/pull/1, CI https://github.com/codcod/employee-knowledge/actions/runs/44464252632 success (`pull_request`, CPython 3.11.18, a single run). w3id PR https://github.com/perma-id/w3id.org/pull/7232 is open and its diff touches only `ids/employee-knowledge/.htaccess`; the w3id checker was clean, and the rules were resolved against `tools/server/` in Docker. Merging PR 1 is the owner's; the w3id merge is the w3id maintainers'. The post-merge curl check is in `tickets/NOTES.md`
