@@ -463,7 +463,7 @@ employee-knowledge/
 ├── LICENSE                    # MIT
 ├── AGENTS.md                  # rules for coding agents
 ├── pyproject.toml, uv.lock
-├── .github/workflows/ci.yml   # lint and tests (GitHub Actions)
+├── .github/workflows/ci.yml   # lint and tests on Python 3.11 (GitHub Actions)
 ├── docs/                      # the product and how to operate it; no links to development/
 │   ├── trust-model.md
 │   ├── operating.md
