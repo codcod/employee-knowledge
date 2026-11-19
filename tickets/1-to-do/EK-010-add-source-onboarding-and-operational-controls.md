@@ -19,7 +19,7 @@ After this ships, a new source can be onboarded through documented configuration
 
 Roadmap task: Task-018 in `development/roadmap.md`.
 
-Document connector credentials, scopes, scheduling, retries, rate limits, retention, source offboarding and audit. Retention depends on EK-001 (§13 question 8). Serves EK-007, EK-008 and EK-009. Milestone M2.
+Document connector credentials, scopes, scheduling, retries, rate limits, retention, source offboarding and audit. Retention depends on EK-014 (§13 question 8). Serves EK-007, EK-008 and EK-009. Milestone M2.
 
 Acceptance: a new source can be onboarded through documented configuration and review without code changes where possible.
 
@@ -34,3 +34,4 @@ Acceptance: a new source can be onboarded through documented configuration and r
 ## History
 
 - 2026-11-18 — created (TO DO). source: chat: migrated from roadmap Task-018 when Brine was set up
+- 2026-11-19 — description patched (EK-001 review, step 8): the §13 answers are recorded by EK-014, split from EK-001

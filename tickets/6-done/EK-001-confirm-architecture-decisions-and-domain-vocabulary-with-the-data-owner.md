@@ -136,7 +136,31 @@ Regression check: temporarily delete one `rdfs:comment` and confirm that `tests/
 
 ## Review
 
-<!-- empty until IN REVIEW -->
+Review 2026-11-19, branch `feat/EK-001-review-pack` (751a054, 347960b).
+
+| id | severity | class | disposition | description | evidence | suggestion |
+|---|---|---|---|---|---|---|
+| F1 | non-blocking | stale-xref | fixed inline | Eight TO DO tickets said the §13 answers come from EK-001; since the split, EK-014 records them | line 22 of EK-003 to EK-010 on `main` | patched at step 8 to cite EK-014, with a History line on each |
+| F2 | non-blocking | other | noted | "Decisions to confirm" paraphrases §13 instead of quoting it (Task 2 item 3), and drops the Task-010/Task-012/ADR-0008 pointers; the meaning is preserved | pack rows Q3, Q4, Q11, Q12, Q15 vs §13 items 3, 4, 11, 12, 15 | deliberate: plain language for a non-technical reader |
+| F3 | non-blocking | spec-unclear | folded (EK-014) | Only `ek:employeeId` and `ek:workEmail` say values are trimmed, though ADR-0008 trims all; `ek:workEmail` says "as the source records it" and "lowercased" | `src/ek/ingest.py` `normalise`; ADR-0008 | settle with the data owner's confirmed definitions in EK-014 |
+| F4 | non-blocking | test-gap | noted | The test covers `employees.ttl` only; `ek:ValueShape` in `shapes.ttl` has a comment but no label | `src/ek/ontology/shapes.ttl:14-16` | the plan scoped the check to `employees.ttl` |
+| F5 | non-blocking | design | noted | The pack copies the 10 definitions, and nothing keeps them in sync with the TTL | byte-identical today | EK-014 retires the pack |
+
+Disposition summary: 1 fixed inline (F1), 1 folded (F3 → EK-014), 3 noted (F2, F4, F5); 0 new tickets.
+cost: estimated S, actual S
+
+- [x] Reviewer independence settled (step 0): delegated. A fresh sub-agent with no hand in the branch ran steps 1–4a. All 5 of its findings were re-verified by hand, and none was discarded.
+- [x] In-tree stale-branch check (step 0a): `pickle doctor` gave 0 errors and 0 warnings after the rebase onto `main`.
+- [x] Implementation audit (steps 1, 2): the acceptance test was re-run verbatim and is green (126 passed). In the regression check in a scratch copy, the test names both a missing comment and a doubled label. Tasks 1 and 2, the docs step and decisions 1–8 were met.
+- [x] Correctness hunt (step 3): an angle hunt, one pass over all 8 angles, run by the delegated reviewer. No host tool or sub-agents were used, and angle 7 was part of the pass. There are no correctness rows.
+- [x] Consistency audit (step 4): `docs/trust-model.md` and `docs/operating.md` agree with the new comments, and nothing else cites version 0.3.0. The only drift found is F1.
+- [x] Documentation audit (step 4a): nothing operator-facing, so no `docs/` change. No docs build is configured.
+- [x] Docs-readability pass (step 4b): consciously skipped. The pack was written in plain language for its reader, and the review checked it against its sources.
+- [x] Findings recorded (step 5)
+- [x] Ticket moved to `6-done/` (step 6)
+- [x] Governing documents reconciled (step 7): the branch updates roadmap Task-001 and architecture §13.
+- [x] Impact sweep (step 8): EK-003 to EK-010 were patched (F1), and F3 was folded into EK-014. No hard dependency was added.
+- [ ] Approval and publish (step 9): pending the owner.
 
 ## History
 
@@ -147,3 +171,4 @@ Regression check: temporarily delete one `rdfs:comment` and confirm that `tests/
 - 2026-11-19 — plan amended inline (applicability gate, owner-approved routing): managerEmployeeId comment in the future tense (nothing resolves it yet; Task-010); ADR-0006/0007 added as definition sources; Needed-by gains Q2 → EK-003 and Q5 → EK-003 (EK-003 cites both); actions say which transitions they perform, states which lead to them. Noted: Q7 and Q10 are arguably project-owner questions; they stay in the pack as scoped
 - 2026-11-19 — READY → IN DEVELOPMENT: picked up
 - 2026-11-19 — IN DEVELOPMENT → IN REVIEW: acceptance green
+- 2026-11-19 — IN REVIEW → DONE: review: no blocking findings; F1 fixed inline, F3 folded into EK-014, F2/F4/F5 noted; publish pending owner approval

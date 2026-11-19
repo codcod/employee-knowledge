@@ -19,7 +19,7 @@ After this ships, allow-listed Confluence spaces and pages can be ingested read-
 
 Roadmap task: Task-015 in `development/roadmap.md`.
 
-Define allow-listed spaces/pages, page versions and evidence references. Needs the source-onboarding items in `docs/source-onboarding.md` and EK-001's answer to §13 question 9. Shares operational controls with EK-010. Milestone M2.
+Define allow-listed spaces/pages, page versions and evidence references. Needs the source-onboarding items in `docs/source-onboarding.md` and EK-014's recorded answer to §13 question 9. Shares operational controls with EK-010. Milestone M2.
 
 Acceptance: connector is read-only, scoped and produces source-version-aware assertions.
 
@@ -34,3 +34,4 @@ Acceptance: connector is read-only, scoped and produces source-version-aware ass
 ## History
 
 - 2026-11-18 — created (TO DO). source: chat: migrated from roadmap Task-015 when Brine was set up
+- 2026-11-19 — description patched (EK-001 review, step 8): the §13 answers are recorded by EK-014, split from EK-001

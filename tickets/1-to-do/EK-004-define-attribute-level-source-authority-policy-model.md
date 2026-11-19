@@ -19,7 +19,7 @@ After this ships, a versioned policy can name, per property, the authoritative s
 
 Roadmap task: Task-012 in `development/roadmap.md`.
 
-Create versioned policy configuration per property, including authoritative sources, freshness, reviewer role and conflict rules (architecture §6). Do not populate unapproved assumptions as facts. The project owner decided on 2026-11-18 that no source is authoritative until this policy exists and is approved. A policy may recommend; it never changes trust state without a review event (ADR-0002). Couples to EK-003 (freshness) and EK-001 (reviewer roles).
+Create versioned policy configuration per property, including authoritative sources, freshness, reviewer role and conflict rules (architecture §6). Do not populate unapproved assumptions as facts. The project owner decided on 2026-11-18 that no source is authoritative until this policy exists and is approved. A policy may recommend; it never changes trust state without a review event (ADR-0002). Couples to EK-003 (freshness) and EK-014 (reviewer roles, §13 question 5).
 
 Acceptance: policy evaluation is testable and a conflict without a policy remains unresolved/untrusted.
 
@@ -34,3 +34,4 @@ Acceptance: policy evaluation is testable and a conflict without a policy remain
 ## History
 
 - 2026-11-18 — created (TO DO). source: chat: migrated from roadmap Task-012 when Brine was set up
+- 2026-11-19 — description patched (EK-001 review, step 8): the §13 answers are recorded by EK-014, split from EK-001

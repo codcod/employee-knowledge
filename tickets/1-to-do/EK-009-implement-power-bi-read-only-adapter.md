@@ -19,7 +19,7 @@ After this ships, approved Power BI workspaces and datasets can be ingested read
 
 Roadmap task: Task-017 in `development/roadmap.md`.
 
-Define approved workspaces/datasets, refresh metadata and row/field provenance. A Power BI report may be a derived view, not an authority (architecture §6). Needs EK-001's answer to §13 question 9; shares operational controls with EK-010. Milestone M2.
+Define approved workspaces/datasets, refresh metadata and row/field provenance. A Power BI report may be a derived view, not an authority (architecture §6). Needs EK-014's recorded answer to §13 question 9; shares operational controls with EK-010. Milestone M2.
 
 Acceptance: connector is read-only and does not treat a report as authoritative without an explicit policy.
 
@@ -34,3 +34,4 @@ Acceptance: connector is read-only and does not treat a report as authoritative 
 ## History
 
 - 2026-11-18 — created (TO DO). source: chat: migrated from roadmap Task-017 when Brine was set up
+- 2026-11-19 — description patched (EK-001 review, step 8): the §13 answers are recorded by EK-014, split from EK-001

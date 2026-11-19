@@ -24,6 +24,7 @@ Scope, to be pinned at refinement:
 - **Business terms.** A confirmed or corrected definition updates the `rdfs:comment` in `src/ek/ontology/employees.ttl`.
 - **Attribute scope (Q2).** An attribute added or excluded under Q2 follows the ontology-first rule (AGENTS.md §3; architecture §4.4): `employees.ttl`, `shapes.ttl`, tests and docs.
 - **Dependent tickets.** Tickets that were waiting on an answer get it in their Description: EK-003 (Q1), EK-004 (Q5), EK-005 (Q10), EK-006 (Q6), EK-007 to EK-009 (Q9), EK-010 (Q8 and Q9).
+- **Trimming in definitions** (EK-001 review F3, folded): ADR-0008 trims every value, but only `ek:employeeId` and `ek:workEmail` say so, and `ek:workEmail` says both "as the source records it" and "lowercased" (`ek:rawValue` keeps the source text). Settle the wording with the confirmed definitions.
 - **Retire the pack** once everything is recorded. Git history keeps it.
 
 Privacy: the filled-in pack must hold policy answers only, never employee records (architecture §8). Check this before the pack enters an agent session.
@@ -39,3 +40,4 @@ Privacy: the filled-in pack must hold policy answers only, never employee record
 ## History
 
 - 2026-11-19 — created (TO DO). source: pickle ticket new
+- 2026-11-19 — folded EK-001 review F3 (trimming wording in the business-term definitions)

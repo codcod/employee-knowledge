@@ -19,7 +19,7 @@ After this ships, allow-listed Jira projects and fields can be ingested read-onl
 
 Roadmap task: Task-016 in `development/roadmap.md`.
 
-Define allowed projects, object types/fields and stable user/issue references. Jira as a data source is unrelated to this Brine board. Needs EK-001's answer to §13 question 9; shares operational controls with EK-010. Milestone M2.
+Define allowed projects, object types/fields and stable user/issue references. Jira as a data source is unrelated to this Brine board. Needs EK-014's recorded answer to §13 question 9; shares operational controls with EK-010. Milestone M2.
 
 Acceptance: connector is read-only, scoped and preserves update/version metadata.
 
@@ -34,3 +34,4 @@ Acceptance: connector is read-only, scoped and preserves update/version metadata
 ## History
 
 - 2026-11-18 — created (TO DO). source: chat: migrated from roadmap Task-016 when Brine was set up
+- 2026-11-19 — description patched (EK-001 review, step 8): the §13 answers are recorded by EK-014, split from EK-001
