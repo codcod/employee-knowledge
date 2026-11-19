@@ -9,7 +9,7 @@
 
 <https://w3id.org/employee-knowledge/ontology> a owl:Ontology ;
     rdfs:label "Employee Knowledge Ontology" ;
-    owl:versionInfo "0.3.0" .
+    owl:versionInfo "0.3.1" .
 
 # ---------------------------------------------------------------------------
 # Employee identity (ADR-0004)
@@ -47,7 +47,7 @@ ek:fullName a ek:AssertableProperty ;
 
 ek:workEmail a ek:AssertableProperty ;
     rdfs:label "work email" ;
-    rdfs:comment "Work email address as the source records it. Format rules are not yet defined (architecture §13, question 11)." ;
+    rdfs:comment "Work email address as the source records it, trimmed and lowercased before comparison (ADR-0008)." ;
     rdfs:range xsd:string .
 
 ek:department a ek:AssertableProperty ;
@@ -62,7 +62,7 @@ ek:jobTitle a ek:AssertableProperty ;
 
 ek:managerEmployeeId a ek:AssertableProperty ;
     rdfs:label "manager employee ID" ;
-    rdfs:comment "Employee ID of the person's manager, from the same issuer as the record. Provisional: may become a relationship (architecture §13, question 15)." ;
+    rdfs:comment "Employee ID of the person's manager as the source states it, from the same issuer as the record. To be resolved to an employee, with broken references reported, by data-quality checks (Task-010; architecture §13, question 15)." ;
     rdfs:range xsd:string .
 
 ek:location a ek:AssertableProperty ;
@@ -86,6 +86,7 @@ ek:FactAssertion a owl:Class ;
 
 ek:aboutEmployee a owl:ObjectProperty ;
     rdfs:label "about employee" ;
+    rdfs:comment "The employee the claim is about." ;
     rdfs:domain ek:FactAssertion ;
     rdfs:range ek:Employee .
 
@@ -102,6 +103,7 @@ ek:value a owl:DatatypeProperty ;
 
 ek:fromSource a owl:ObjectProperty ;
     rdfs:label "from source" ;
+    rdfs:comment "The configured source that made the claim (ADR-0007)." ;
     rdfs:domain ek:FactAssertion ;
     rdfs:range ek:Source .
 
@@ -120,11 +122,13 @@ ek:IngestionRun a owl:Class ;
 
 ek:forSource a owl:ObjectProperty ;
     rdfs:label "for source" ;
+    rdfs:comment "The configured source this run read (ADR-0003, ADR-0007)." ;
     rdfs:domain ek:IngestionRun ;
     rdfs:range ek:Source .
 
 ek:mappingVersion a owl:DatatypeProperty ;
     rdfs:label "mapping version" ;
+    rdfs:comment "The source's mapping_version at the time of the run, so a change to the mapping is visible in provenance (ADR-0007)." ;
     rdfs:domain ek:IngestionRun ;
     rdfs:range xsd:string .
 
@@ -134,8 +138,13 @@ ek:runStatus a owl:ObjectProperty ;
     rdfs:domain ek:IngestionRun ;
     rdfs:range ek:RunStatus .
 
-ek:RunStatus a owl:Class ; rdfs:label "run status" .
-ek:Completed a ek:RunStatus ; rdfs:label "completed" .
+ek:RunStatus a owl:Class ;
+    rdfs:label "run status" ;
+    rdfs:comment "The completion status of an ingestion run." .
+
+ek:Completed a ek:RunStatus ;
+    rdfs:label "completed" ;
+    rdfs:comment "The run finished. Written last, so a run without it is incomplete and ignored (ADR-0003)." .
 
 ek:fileName a owl:DatatypeProperty ;
     rdfs:label "file name" ;
@@ -154,6 +163,7 @@ ek:Observation a owl:Class ;
 
 ek:ofAssertion a owl:ObjectProperty ;
     rdfs:label "of assertion" ;
+    rdfs:comment "The assertion this observation is evidence for." ;
     rdfs:domain ek:Observation ;
     rdfs:range ek:FactAssertion .
 
@@ -182,17 +192,27 @@ ek:observedAt a owl:DatatypeProperty ;
 
 ek:validationResult a owl:ObjectProperty ;
     rdfs:label "validation result" ;
+    rdfs:comment "Whether the observed value passed the value shapes at the end of the run (ADR-0006). Never changes trust state." ;
     rdfs:domain ek:Observation ;
     rdfs:range ek:ValidationOutcome .
 
 ek:validationMessage a owl:DatatypeProperty ;
     rdfs:label "validation message" ;
+    rdfs:comment "The SHACL message for a value-shape violation on this observation (ADR-0006)." ;
     rdfs:domain ek:Observation ;
     rdfs:range xsd:string .
 
-ek:ValidationOutcome a owl:Class ; rdfs:label "validation outcome" .
-ek:Conforms a ek:ValidationOutcome ; rdfs:label "conforms" .
-ek:Violation a ek:ValidationOutcome ; rdfs:label "violation" .
+ek:ValidationOutcome a owl:Class ;
+    rdfs:label "validation outcome" ;
+    rdfs:comment "The result of structural validation of an observed value (ADR-0006)." .
+
+ek:Conforms a ek:ValidationOutcome ;
+    rdfs:label "conforms" ;
+    rdfs:comment "The observed value passed every value shape." .
+
+ek:Violation a ek:ValidationOutcome ;
+    rdfs:label "violation" ;
+    rdfs:comment "The observed value failed a value shape. The assertion is still stored, untrusted, and appears in the report (ADR-0006)." .
 
 ek:QuarantinedRecord a owl:Class ;
     rdfs:subClassOf prov:Entity ;
@@ -201,6 +221,7 @@ ek:QuarantinedRecord a owl:Class ;
 
 ek:quarantineReason a owl:DatatypeProperty ;
     rdfs:label "quarantine reason" ;
+    rdfs:comment "Why the record could not become assertions, for example a missing employee ID." ;
     rdfs:domain ek:QuarantinedRecord ;
     rdfs:range xsd:string .
 
@@ -215,16 +236,19 @@ ek:ReviewEvent a owl:Class ;
 
 ek:reviewAction a owl:ObjectProperty ;
     rdfs:label "review action" ;
+    rdfs:comment "The action the reviewer took (ADR-0002)." ;
     rdfs:domain ek:ReviewEvent ;
     rdfs:range ek:ReviewAction .
 
 ek:fromState a owl:ObjectProperty ;
     rdfs:label "from state" ;
+    rdfs:comment "The assertion's review state before the event (ADR-0002)." ;
     rdfs:domain ek:ReviewEvent ;
     rdfs:range ek:ReviewState .
 
 ek:toState a owl:ObjectProperty ;
     rdfs:label "to state" ;
+    rdfs:comment "The assertion's review state after the event. The state of an assertion is the ek:toState of its latest event (ADR-0002)." ;
     rdfs:domain ek:ReviewEvent ;
     rdfs:range ek:ReviewState .
 
@@ -236,6 +260,7 @@ ek:reviewer a owl:DatatypeProperty ;
 
 ek:reviewReason a owl:DatatypeProperty ;
     rdfs:label "review reason" ;
+    rdfs:comment "The reviewer's stated reason. Required and non-blank for every action." ;
     rdfs:domain ek:ReviewEvent ;
     rdfs:range xsd:string .
 
@@ -253,19 +278,54 @@ ek:sequence a owl:DatatypeProperty ;
 
 ek:supersededBy a owl:ObjectProperty ;
     rdfs:label "superseded by" ;
+    rdfs:comment "On a supersede event only: the existing assertion, about the same employee and property, that replaces the superseded one (ADR-0002)." ;
     rdfs:domain ek:ReviewEvent ;
     rdfs:range ek:FactAssertion .
 
-ek:ReviewAction a owl:Class ; rdfs:label "review action" .
-ek:Accept a ek:ReviewAction ; rdfs:label "accept" .
-ek:Reject a ek:ReviewAction ; rdfs:label "reject" .
-ek:RequestEvidence a ek:ReviewAction ; rdfs:label "request evidence" .
-ek:Supersede a ek:ReviewAction ; rdfs:label "supersede" .
-ek:Reopen a ek:ReviewAction ; rdfs:label "reopen" .
+ek:ReviewAction a owl:Class ;
+    rdfs:label "review action" ;
+    rdfs:comment "What a reviewer did in a review event. The allowed transitions are in ADR-0002." .
 
-ek:ReviewState a owl:Class ; rdfs:label "review state" .
-ek:Candidate a ek:ReviewState ; rdfs:label "candidate" .
-ek:Accepted a ek:ReviewState ; rdfs:label "accepted" .
-ek:Rejected a ek:ReviewState ; rdfs:label "rejected" .
-ek:NeedsEvidence a ek:ReviewState ; rdfs:label "needs evidence" .
-ek:Superseded a ek:ReviewState ; rdfs:label "superseded" .
+ek:Accept a ek:ReviewAction ;
+    rdfs:label "accept" ;
+    rdfs:comment "Marks a candidate or needs-evidence assertion as accepted, or restores a superseded one to accepted. Accepted assertions are projected into the trusted graph." .
+
+ek:Reject a ek:ReviewAction ;
+    rdfs:label "reject" ;
+    rdfs:comment "Marks a candidate or needs-evidence assertion as rejected, or revokes an accepted one to rejected. The source evidence is kept." .
+
+ek:RequestEvidence a ek:ReviewAction ;
+    rdfs:label "request evidence" ;
+    rdfs:comment "Moves a candidate assertion to needs-evidence: the reviewer needs more evidence before accepting or rejecting it." .
+
+ek:Supersede a ek:ReviewAction ;
+    rdfs:label "supersede" ;
+    rdfs:comment "Moves an accepted assertion to superseded, optionally naming the assertion that replaces it with ek:supersededBy." .
+
+ek:Reopen a ek:ReviewAction ;
+    rdfs:label "reopen" ;
+    rdfs:comment "Moves a rejected assertion back to candidate for another review." .
+
+ek:ReviewState a owl:Class ;
+    rdfs:label "review state" ;
+    rdfs:comment "The trust state of an assertion, derived from its latest review event (ADR-0002)." .
+
+ek:Candidate a ek:ReviewState ;
+    rdfs:label "candidate" ;
+    rdfs:comment "Not yet decided. The state of every assertion with no review events, and the result of reopen. Untrusted." .
+
+ek:Accepted a ek:ReviewState ;
+    rdfs:label "accepted" ;
+    rdfs:comment "A reviewer accepted the assertion, by accept or restore. The only trusted state." .
+
+ek:Rejected a ek:ReviewState ;
+    rdfs:label "rejected" ;
+    rdfs:comment "A reviewer rejected or revoked the assertion. Untrusted; the evidence is kept." .
+
+ek:NeedsEvidence a ek:ReviewState ;
+    rdfs:label "needs evidence" ;
+    rdfs:comment "A reviewer asked for more evidence before deciding. Untrusted." .
+
+ek:Superseded a ek:ReviewState ;
+    rdfs:label "superseded" ;
+    rdfs:comment "A reviewer marked a previously accepted assertion as superseded. Untrusted; accept restores it." .
