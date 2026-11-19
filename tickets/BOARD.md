@@ -9,14 +9,15 @@ hand — edit the tickets. Hand-written planning notes live in [`NOTES.md`](NOTE
 **WIP limits (per child-project):**
 - `employee-knowledge`: `3-in-development/` ≤ 1 · `4-in-review/` ≤ 1
 
-Last updated: 2026-11-18
+Last updated: 2026-11-19
 
 ## IN DEVELOPMENT
 
-### employee-knowledge (0/1)
+### employee-knowledge (1/1)
 
 | id | title | depends-on |
 |---|---|---|
+| EK-002 | Run tests and lint in GitHub Actions | [] |
 
 ## IN REVIEW
 
@@ -38,7 +39,6 @@ Last updated: 2026-11-18
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
-| EK-002 | Run tests and lint in GitHub Actions | medium | low | S | [] |  |
 
 ## TO DO (impact order, per child)
 

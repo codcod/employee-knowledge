@@ -207,3 +207,4 @@ Remote, at publish (recorded in History):
 - 2026-11-18 — refined: owner decisions — rewrite history to `codcod <nikos@linux.com>` to match the pickle repo; ruleset blocks force-push/delete only; w3id contact name + GitHub username; redirect to `main`. Plan written
 - 2026-11-18 — TO DO → READY: plan complete
 - 2026-11-19 — plan amended inline (applicability gate, owner-approved routing): pin `astral-sh/setup-uv@v10.3.3` (no `@v10` major tag exists since v8; blocking as written) in decision 6, Task 2 and the acceptance grep; record the 3 unreachable EK-013 hashes as pre-rebase; commit count 25+1; Task 4.1 jq prints the `ids` sha and `null` via `tostring`; roadmap edit grammar ("carries on")
+- 2026-11-19 — READY → IN DEVELOPMENT: picked up
