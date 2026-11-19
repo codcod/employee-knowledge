@@ -38,6 +38,7 @@ Last updated: 2026-11-19
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
+| EK-001 | Confirm architecture decisions and domain vocabulary with the data owner | high | low | S | [] |  |
 
 ## TO DO (impact order, per child)
 
@@ -45,9 +46,9 @@ Last updated: 2026-11-19
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
-| EK-001 | Confirm architecture decisions and domain vocabulary with the data owner | high | medium | M | [] |  |
 | EK-005 | Add trusted-only and evidence-inclusive query interfaces | high | medium | M | [] |  |
 | EK-012 | Add an extension point for third-party source adapters | high | medium | M | [] |  |
+| EK-014 | Record the data owner's answers to the architecture review | high | medium | M | [EK-001] |  |
 | EK-003 | Add data-quality and freshness findings | high | medium-high | M-L | [] |  |
 | EK-004 | Define attribute-level source-authority policy model | high | high | L | [] |  |
 | EK-010 | Add source onboarding and operational controls | medium | medium | M | [] |  |
