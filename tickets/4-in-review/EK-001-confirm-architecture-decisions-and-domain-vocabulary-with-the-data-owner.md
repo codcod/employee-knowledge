@@ -146,3 +146,4 @@ Regression check: temporarily delete one `rdfs:comment` and confirm that `tests/
 - 2026-11-19 — TO DO → READY: plan complete
 - 2026-11-19 — plan amended inline (applicability gate, owner-approved routing): managerEmployeeId comment in the future tense (nothing resolves it yet; Task-010); ADR-0006/0007 added as definition sources; Needed-by gains Q2 → EK-003 and Q5 → EK-003 (EK-003 cites both); actions say which transitions they perform, states which lead to them. Noted: Q7 and Q10 are arguably project-owner questions; they stay in the pack as scoped
 - 2026-11-19 — READY → IN DEVELOPMENT: picked up
+- 2026-11-19 — IN DEVELOPMENT → IN REVIEW: acceptance green
