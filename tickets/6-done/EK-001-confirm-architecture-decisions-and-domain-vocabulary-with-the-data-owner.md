@@ -160,7 +160,7 @@ cost: estimated S, actual S
 - [x] Ticket moved to `6-done/` (step 6)
 - [x] Governing documents reconciled (step 7): the branch updates roadmap Task-001 and architecture §13.
 - [x] Impact sweep (step 8): EK-003 to EK-010 were patched (F1), and F3 was folded into EK-014. No hard dependency was added.
-- [ ] Approval and publish (step 9): pending the owner.
+- [x] Approval and publish (step 9): the owner approved. `main` was pushed first, and the in-tree base check printed nothing before the branch push.
 
 ## History
 
@@ -172,3 +172,4 @@ cost: estimated S, actual S
 - 2026-11-19 — READY → IN DEVELOPMENT: picked up
 - 2026-11-19 — IN DEVELOPMENT → IN REVIEW: acceptance green
 - 2026-11-19 — IN REVIEW → DONE: review: no blocking findings; F1 fixed inline, F3 folded into EK-014, F2/F4/F5 noted; publish pending owner approval
+- 2026-11-19 — published (owner-approved): pushed 5 bookkeeping commits on `main`, CI https://github.com/codcod/employee-knowledge/actions/runs/44497464568 success. PR https://github.com/codcod/employee-knowledge/pull/2, CI https://github.com/codcod/employee-knowledge/actions/runs/44497516202 success. Merging is the owner's
