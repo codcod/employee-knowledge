@@ -197,7 +197,31 @@ Remote, at publish (recorded in History):
 
 ## Review
 
-<!-- empty until IN REVIEW -->
+Review 2026-11-19, branch `feat/EK-002-ci` (33c9824, bd445e4).
+
+| id | severity | class | disposition | description | evidence | suggestion |
+|---|---|---|---|---|---|---|
+| F1 | non-blocking | design | noted | `ci.yml` has no `permissions:` block, so the GITHUB_TOKEN scope follows the repository default and checkout persists it while `uv sync`/`pytest` run | `.github/workflows/ci.yml` has no `permissions` key; decision 6 forbids other workflow changes | raised with the owner at the approval step: add `permissions: { contents: read }`, or confirm the repository default is read-only at publish |
+| F2 | non-blocking | stale-xref | noted | plan prose (Task 2, Finish 4) says "current action majors"; the commit says "current action releases", which is accurate after decision 6 was amended to the full `v10.3.3` tag | `git log -2 feat/EK-002-ci` vs this ticket's Task 2 | keep the branch wording |
+| F3 | non-blocking | design | noted | roadmap Task-002 line reads "Progress: Done: …", a doubled label; Task-003 onward use "Status: done in M0." | `development/roadmap.md:44` vs `:47` | matches the plan's mandated wording; leave |
+
+Disposition summary: 3 noted (F1, F2, F3); 0 fixed inline, 0 folded, 0 new tickets.
+cost: estimated S, actual S
+
+- [x] Reviewer independence settled (step 0): delegated. A fresh sub-agent with no hand in the branch ran steps 1–4a. All 3 of its findings were re-verified by hand, and none was discarded.
+- [x] In-tree stale-branch check (step 0a): `pickle doctor` flagged the branch's copy of the ticket as stale. I rebased onto `main` and the re-run was clean.
+- [x] Implementation audit (steps 1, 2): the local acceptance test was re-run verbatim and is green (125 passed on 3.14 and on 3.11.18, one identity, grep 4, secrets 0, forbidden paths []). Tasks 1–3 and the docs step were met. Task 4 and the remote acceptance wait for publish.
+- [x] Correctness hunt (step 3): an angle hunt, one pass over all 8 angles (low complexity), run by the delegated reviewer. No host tool or sub-agents were used, and angle 7 was part of the pass. There are no correctness rows.
+- [x] Consistency audit (step 4): no stale `checkout@v4`/`setup-uv@v6` or CI references remain. The only drift is F2 and F3.
+- [x] Documentation audit (step 4a): nothing user-facing, so no `docs/` change. No docs build is configured.
+- [x] Docs-readability pass (step 4b): consciously skipped. The `.md` changes are two one-line edits, both copied verbatim from the plan.
+- [x] Findings recorded (step 5)
+- [x] Ticket moved to `6-done/` (step 6)
+- [x] Governing documents reconciled (step 7): the branch updates roadmap and architecture §10. No other document cites EK-002's workflow.
+- [x] Impact sweep (step 8): no ticket depends on EK-002 or cites its CI assumptions.
+- [ ] Approval and publish (step 9, Task 4): pending the owner.
+
+Note: Task 4.2 pushes `main` before the pull request merges, so the first green run on `main` exercises the old workflow (`checkout@v4`, `setup-uv@v6`, unpinned Python). The new workflow is first proven on the pull-request run.
 
 ## History
 
@@ -210,3 +234,4 @@ Remote, at publish (recorded in History):
 - 2026-11-19 — READY → IN DEVELOPMENT: picked up
 - 2026-11-19 — author rewrite done (Task 1): 27 commits on `main` and `feat/EK-011-package-ontology`, author and committer `Nikos` → `codcod`, email unchanged, trees identical. Map of hashes cited in History: 6f307c1 → 6a7c242, 4f023ea → 764e0d9 (EK-011); 753a9ca → cc26497, 7de854c → 6836985 (EK-013); 05030d4, 4167979, 6a6ff33 (EK-013) pre-rebase, no successor
 - 2026-11-19 — IN DEVELOPMENT → IN REVIEW: acceptance green
+- 2026-11-19 — IN REVIEW → DONE: review: no blocking findings; 3 noted (F1, F2, F3); publish (Task 4) pending owner approval
