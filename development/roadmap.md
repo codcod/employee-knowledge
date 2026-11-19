@@ -11,7 +11,7 @@ Milestone M0 is defined by [architecture.md §11](architecture.md#11-first-imple
 
 | Milestone | Status | Scope | Tasks |
 |---|---|---|---|
-| M0: Excel vertical slice | Done | Architecture §11: configured Excel mapping, deterministic identity, provenance-bearing assertions with run metadata, untrusted/trusted/audit graphs, SHACL validation, a second conflicting synthetic source, discrepancy report, audited promotion, idempotent re-ingestion. Task-001 (EK-001) and Task-002 (EK-002) carry on after M0 | Task-003 to Task-009, Task-011 |
+| M0: Excel vertical slice | Done | Architecture §11: configured Excel mapping, deterministic identity, provenance-bearing assertions with run metadata, untrusted/trusted/audit graphs, SHACL validation, a second conflicting synthetic source, discrepancy report, audited promotion, idempotent re-ingestion. Task-001 (EK-001) carries on after M0 | Task-003 to Task-009, Task-011 |
 | M1: Data quality and identity | Planned | Ambiguous identity detection, freshness and completeness findings, trusted-only and evidence-inclusive queries | Task-010, Task-013 |
 | M2: Enterprise connectors | Planned | Confluence allow-listed spaces/pages; Jira allow-listed projects and fields; Power BI approved workspace/dataset access; all read-only and source-version-aware | Task-015 to Task-018 |
 | M3: Assisted reconciliation | Planned | AI-proposed mappings, evidence-linked extraction, attribute-level authority policies, human review queue. No autonomous trust promotion. | Task-012 |
@@ -41,9 +41,7 @@ narrow and respect the board's WIP limits.
 - Verify package layout, CLI entry point, pytest, Ruff and CI.
 - Add safe `.gitignore` rules for secrets, data stores, exports and reports.
 - Acceptance: clean install, tests and lint run in CI; no sensitive fixtures are tracked.
-- Progress: local baseline done (uv, pytest, Ruff, `.gitignore`). GitHub Actions workflow
-  added (`.github/workflows/ci.yml`); done once the repository is pushed and the first run
-  is green.
+- Progress: Done: CI runs on GitHub Actions on Python 3.11 (EK-002).
 
 **Task-003: Define employee ontology and SHACL validation**
 - Status: done in M0.
