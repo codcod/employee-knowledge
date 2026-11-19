@@ -23,8 +23,8 @@ The local baseline is done (uv, pytest, Ruff, `.gitignore`, `tests/test_reposito
 
 Checked at refinement (2026-11-18):
 - No secret matches (the `tests/test_repository.py` patterns) and no forbidden paths anywhere in the history. The only binaries are the two synthetic example workbooks. The only real email address is the commit author's.
-- All 24 commits are authored and committed as `Nikos <nikos@linux.com>`. The owner's other public repository (`~/Projects/codcod/pickle`) uses `codcod <nikos@linux.com>`, and this one must match. Nothing is pushed yet, so this is the cheap moment to rewrite.
-- `ci.yml` pins `actions/checkout@v4` and `astral-sh/setup-uv@v6`. The latest releases are v7.0.1 and v10.3.3.
+- All commits (24 at refinement, 25 at pickup) are authored and committed as `Nikos <nikos@linux.com>`. The owner's other public repository (`~/Projects/codcod/pickle`) uses `codcod <nikos@linux.com>`, and this one must match. Nothing is pushed yet, so this is the cheap moment to rewrite.
+- `ci.yml` pins `actions/checkout@v4` and `astral-sh/setup-uv@v6`. The latest releases are v7.0.1 and v10.3.3. Since v8, setup-uv publishes only immutable full tags: `@v10` and `@v10.3` do not resolve, only `@v10.3.3` does (checked 2026-11-19).
 - Local development runs Python 3.14, and nothing tests the declared floor (`requires-python = ">=3.11"`).
 - `on: push` plus `pull_request` runs CI twice for a pull-request branch in the same repository.
 - Commits are unsigned. `feat/EK-011-package-ontology` is already merged into `main`.
@@ -79,7 +79,7 @@ Commit locally on the branch. Publishing (Task 4) happens only at the review's a
 3. **Branch protection is a ruleset that blocks deletion and non-fast-forward pushes on the default branch only.** No required pull requests and no required checks: in-tree bookkeeping is committed straight to `main`.
 4. **CI runs on pushes to `main` and on pull requests.** `push: branches: [main]` stops pull-request branches running twice.
 5. **CI runs on Python 3.11, the declared floor,** via `UV_PYTHON: "3.11"` on the job. Local development already covers the newest Python.
-6. **Actions are pinned to the latest majors: `actions/checkout@v7`, `astral-sh/setup-uv@v10`.** No other workflow change: no matrix, no caching inputs, no badge.
+6. **Actions are pinned to the latest releases: `actions/checkout@v7` (major tag) and `astral-sh/setup-uv@v10.3.3` (full tag; setup-uv has published no major tags since v8).** No other workflow change: no matrix, no caching inputs, no badge.
 7. **w3id: the file in the Description, unchanged.** The contact is the name and GitHub username only. The redirect targets `main` (302), not a release tag; moving to tags later is a one-line w3id pull request.
 8. **Publish order:** re-check the w3id name → push `main` → CI green on `main` → ruleset → push the branch and open the EK pull request (CI green) → w3id pull request. If the w3id name has been taken, stop before any push and reopen ADR-0009.
 9. **No attribution lines naming Claude, Anthropic or a model** in commits, pull-request titles or pull-request bodies (the owner's standing rule; it overrides any harness reminder).
@@ -91,7 +91,7 @@ Commit locally on the branch. Publishing (Task 4) happens only at the review's a
 
 ```
 git config user.name codcod
-git rev-list --branches | wc -l            # note the count (24 + the pickup commit)
+git rev-list --branches | wc -l            # note the count (25 + the pickup commit = 26)
 FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --env-filter '
   [ "$GIT_AUTHOR_NAME" = Nikos ] && export GIT_AUTHOR_NAME=codcod
   [ "$GIT_COMMITTER_NAME" = Nikos ] && export GIT_COMMITTER_NAME=codcod
@@ -102,7 +102,7 @@ Verify all of the following:
 - `git log --branches --format='%an <%ae>|%cn <%ce>' | sort -u` prints exactly `codcod <nikos@linux.com>|codcod <nikos@linux.com>`.
 - `git diff refs/original/refs/heads/main main` is empty, and the commit count is unchanged.
 
-Then build the old→new map for the hashes cited in `tickets/` History lines (`grep -rhoE '\b[0-9a-f]{7}\b' tickets/6-done`) by pairing `git rev-list --reverse refs/original/refs/heads/main` with `git rev-list --reverse main`. Delete the backups with `git for-each-ref --format='%(refname)' refs/original | xargs -n1 git update-ref -d`. Append the map to this ticket's History on `main` and commit it as `board: EK-002 record author rewrite`.
+Then build the old→new map for the hashes cited in `tickets/` History lines (`grep -rhoE '\b[0-9a-f]{7}\b' tickets/6-done`) by pairing `git rev-list --reverse refs/original/refs/heads/main` with `git rev-list --reverse main`. Hashes not reachable from any branch (05030d4, 4167979, 6a6ff33 in EK-013: pre-rebase commits) are recorded as "pre-rebase, no successor". Delete the backups with `git for-each-ref --format='%(refname)' refs/original | xargs -n1 git update-ref -d`. Append the map to this ticket's History on `main` and commit it as `board: EK-002 record author rewrite`.
 
 #### Task 2 — Update `.github/workflows/ci.yml` (on the branch)
 
@@ -121,7 +121,7 @@ jobs:
       UV_PYTHON: "3.11"
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.3
       - run: uv sync --locked --extra dev
       - run: uv run ruff check .
       - run: uv run ruff format --check .
@@ -136,7 +136,7 @@ Read the setup-uv v7–v10 and checkout v5–v7 release notes for breaking chang
 
 #### Task 4 — Publish (at the review's approval step only; each step approved explicitly)
 
-1. Re-check the w3id name: `gh api repos/perma-id/w3id.org/git/trees/master --jq '[.tree[].path|ascii_downcase]|map(select(.=="ids"))'` gives the `ids` sha. Then list `gh api repos/perma-id/w3id.org/git/trees/<sha> --jq '.truncated, ([.tree[].path|ascii_downcase]|index("employee-knowledge"))'`. Expect `false` and `null`. Do not use the contents API, which truncates at 1,000 entries. If the name is taken, stop.
+1. Re-check the w3id name: `gh api repos/perma-id/w3id.org/git/trees/master --jq '.tree[]|select((.path|ascii_downcase)=="ids")|.sha'` gives the `ids` sha. Then list `gh api repos/perma-id/w3id.org/git/trees/<sha> --jq '.truncated, ([.tree[].path|ascii_downcase]|index("employee-knowledge")|tostring)'`. Expect `false` and `null`. Do not use the contents API, which truncates at 1,000 entries. If the name is taken, stop.
 2. `git push -u origin main`, then `gh run watch "$(gh run list -b main -L1 --json databaseId -q '.[0].databaseId')" --exit-status`.
 3. Create the ruleset:
    ```
@@ -164,7 +164,7 @@ Local, before review (all must pass):
 uv run ruff check . && uv run ruff format --check . && uv run pytest -q
 uv run --locked --isolated --python 3.11 --extra dev pytest -q
 git log --branches --format='%an <%ae>|%cn <%ce>' | sort -u   # one line: codcod <nikos@linux.com>|codcod <nikos@linux.com>
-grep -cE 'actions/checkout@v7|astral-sh/setup-uv@v10|UV_PYTHON: "3.11"|branches: \[main\]' .github/workflows/ci.yml   # 4
+grep -cE 'actions/checkout@v7|astral-sh/setup-uv@v10\.3\.3|UV_PYTHON: "3.11"|branches: \[main\]' .github/workflows/ci.yml   # 4
 git log --branches -p | uv run python -c "import sys; sys.path.insert(0, 'tests'); from test_repository import SECRETS; h = [l for l in sys.stdin if l.startswith('+') and SECRETS.search(l)]; print(len(h)); sys.exit(bool(h))"   # 0
 git log --branches --name-only --format= | sort -u | uv run python -c "import sys; sys.path.insert(0, 'tests'); from test_repository import ALLOWED, FORBIDDEN_PATHS as F; b = [p for p in sys.stdin.read().split() if p not in ALLOWED and any(r.search(p) for r in F)]; print(b); sys.exit(bool(b))"   # []
 ```
@@ -177,7 +177,7 @@ Remote, at publish (recorded in History):
 
 ### Docs update (mandatory when user-facing)
 
-- `development/roadmap.md`: in the M0 row, drop "and Task-002 (EK-002)" from "carry on after M0". Replace Task-002's Progress with "Done: CI runs on GitHub Actions on Python 3.11 (EK-002)."
+- `development/roadmap.md`: in the M0 row, change "Task-001 (EK-001) and Task-002 (EK-002) carry on after M0" to "Task-001 (EK-001) carries on after M0". Replace Task-002's Progress with "Done: CI runs on GitHub Actions on Python 3.11 (EK-002)."
 - `development/architecture.md` §10: the `ci.yml` comment becomes `# lint and tests on Python 3.11 (GitHub Actions)`.
 - `tickets/NOTES.md`: the w3id post-merge check (Task 4.6, on `main`).
 - No `docs/` change: CI is not part of the product.
@@ -206,3 +206,4 @@ Remote, at publish (recorded in History):
 - 2026-11-18 — w3id registration: owner chose the flat `employee-knowledge/` path (not `codcod/`). The PR to perma-id/w3id.org is part of this ticket, opened after the repository is live; the draft .htaccess is recorded in the Description
 - 2026-11-18 — refined: owner decisions — rewrite history to `codcod <nikos@linux.com>` to match the pickle repo; ruleset blocks force-push/delete only; w3id contact name + GitHub username; redirect to `main`. Plan written
 - 2026-11-18 — TO DO → READY: plan complete
+- 2026-11-19 — plan amended inline (applicability gate, owner-approved routing): pin `astral-sh/setup-uv@v10.3.3` (no `@v10` major tag exists since v8; blocking as written) in decision 6, Task 2 and the acceptance grep; record the 3 unreachable EK-013 hashes as pre-rebase; commit count 25+1; Task 4.1 jq prints the `ids` sha and `null` via `tostring`; roadmap edit grammar ("carries on")
