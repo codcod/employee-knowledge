@@ -533,7 +533,8 @@ The milestones, the Task-001 to Task-018 backlog and the task order are kept in
 ## 13. Open questions for the project owner
 
 The first tasks should resolve, not silently assume, these questions. Answered questions
-keep their decision inline.
+keep their decision inline. The open questions go to the data owner in
+`development/data-owner-review.md` (EK-001); EK-014 records the answers here.
 
 1. Which system issues the canonical employee ID, and does it remain stable across
    rehire or legal-entity changes? *Decided (2026-11-18):* the HR system issues it. Stability
