@@ -50,7 +50,7 @@ Commit locally on the branch. Bookkeeping (ticket moves) goes on `main`, never o
 1. **Split (owner, 2026-11-19).** This ticket prepares the pack and the definitions. EK-014 records the data owner's answers. No §13 question is answered here, and no business rule is invented.
 2. **Done bar (owner).** A question is closed when it is answered, or when it is explicitly deferred with who decides and which ticket needs the answer. The pack offers both options for every question.
 3. **Definitions (owner).** Every ek: term gets an `rdfs:comment`, following the existing convention; no `skos:definition`. Only the ten business terms go to the data owner for confirmation: `ek:Employee`, `ek:employeeId`, `ek:issuer`, and the seven assertable properties.
-4. **Where definitions come from.** Write each definition from ADR-0001 to ADR-0004, ADR-0008, architecture §4.7 and §5, or what `src/ek/` does. Never add meaning that none of these states. The review states and actions follow ADR-0002's transition table.
+4. **Where definitions come from.** Write each definition from ADR-0001 to ADR-0004, ADR-0006 to ADR-0008, architecture §4.7 and §5, or what `src/ek/` does. Never add meaning that none of these states. The review states and actions follow ADR-0002's transition table.
 5. **Where answers go (owner, used by EK-014).** Answers go inline in §13. An ADR is written only where an answer changes the architecture.
 6. **The pack is Markdown in `development/` (owner).** The file is `development/data-owner-review.md`, version-controlled. The owner exports or prints it for the session, and EK-014 retires it.
 7. **Ontology version `0.3.0` → `0.3.1`.** Comments change and no IRI does, so this is a patch bump.
@@ -63,11 +63,11 @@ Commit locally on the branch. Bookkeeping (ticket moves) goes on `main`, never o
 - Add an `rdfs:comment` to the 30 terms that lack one:
   - Classes and properties: `aboutEmployee fromSource forSource mappingVersion ofAssertion validationResult validationMessage quarantineReason reviewAction fromState toState reviewReason supersededBy RunStatus ValidationOutcome ReviewAction ReviewState`.
   - Individuals: `Completed Conforms Violation Accept Reject RequestEvidence Supersede Reopen Candidate Accepted Rejected NeedsEvidence Superseded`.
-  - Each review action and state says what it means and which transitions lead to it (ADR-0002 §States and transitions).
+  - Each review action says what it means and which transitions it performs. Each review state says what it means and which transitions lead to it (ADR-0002 §States and transitions).
   - Keep each comment to one or two sentences, in the style of the file. Individuals may move off their current one-line form.
 - Replace the stale comments:
   - `ek:workEmail`: "Work email address as the source records it, trimmed and lowercased before comparison (ADR-0008)."
-  - `ek:managerEmployeeId`: "Employee ID of the person's manager as the source states it, from the same issuer as the record. Resolved to an employee, and broken references reported, by data-quality checks (architecture §13, question 15)."
+  - `ek:managerEmployeeId`: "Employee ID of the person's manager as the source states it, from the same issuer as the record. To be resolved to an employee, with broken references reported, by data-quality checks (Task-010; architecture §13, question 15)."
 - Set `owl:versionInfo "0.3.1"`.
 - Add `tests/test_ontology.py` with one test. It parses `employees.ttl` with rdflib and asserts that every subject IRI in the `ek:` namespace has exactly one `rdfs:label` and at least one non-empty `rdfs:comment`. The assertion message lists the terms that fail. Use `import typing as tp` if typing is needed.
 - Commit: `feat(ontology): define every ontology term (EK-001)`.
@@ -85,7 +85,7 @@ Plain Markdown with no links into `docs/` and no employee data. The sections are
    - The question, quoted from §13.
    - **Why it matters**: what it blocks, in one or two sentences.
    - **Today's default**: from §13's closing paragraph and the ADRs. For example, Q5 has a local reviewer label that is not access control (§4.7). Q6 sends nothing to an AI provider. Q7 is ADR-0005's store. Q9 has connector access disabled.
-   - **Needed by**: Q1 → EK-003 and ADR-0004. Q2 → ontology scope (§4.4). Q5 → EK-004. Q6 → EK-006. Q7 → ADR-0005, no ticket yet. Q8 → EK-010. Q9 → EK-007 to EK-009, and EK-010 for access approval. Q10 → EK-005.
+   - **Needed by**: Q1 → ADR-0004 (and EK-003's unresolved-identity findings). Q2 → EK-003 and ontology scope (§4.4). Q5 → EK-004 and EK-003. Q6 → EK-006. Q7 → ADR-0005, no ticket yet. Q8 → EK-010. Q9 → EK-007 to EK-009, and EK-010 for access approval. Q10 → EK-005.
    - The empty fields `Answer:` and `Or defer — who decides, by when:`.
 3. **Decisions to confirm.** One row each for Q1 (the HR system issues the ID), Q3, Q4 (including the meaning of `ek:observedAt`: a time supplied by the source, never the ingestion time), Q11, Q12, Q13 and Q15.
    - Table columns: `| question | decided (2026-11-18) | confirm / correct |`.
@@ -144,3 +144,4 @@ Regression check: temporarily delete one `rdfs:comment` and confirm that `tests/
 - 2026-11-18 — EK-013 refinement: Q14 no longer waits on a company domain; namespace moves to w3id.org in EK-013
 - 2026-11-19 — refined. Owner decisions: the data owner is a separate person; split, so EK-014 (new, depends-on EK-001) records the answers; a question is done when it is answered or deferred with who decides; every term gets an rdfs:comment, and the data owner confirms the 10 business terms; answers go inline in §13, with an ADR if material; the pack is Markdown in development/. Re-graded complexity medium → low, cost M → S. Plan written
 - 2026-11-19 — TO DO → READY: plan complete
+- 2026-11-19 — plan amended inline (applicability gate, owner-approved routing): managerEmployeeId comment in the future tense (nothing resolves it yet; Task-010); ADR-0006/0007 added as definition sources; Needed-by gains Q2 → EK-003 and Q5 → EK-003 (EK-003 cites both); actions say which transitions they perform, states which lead to them. Noted: Q7 and Q10 are arguably project-owner questions; they stay in the pack as scoped
