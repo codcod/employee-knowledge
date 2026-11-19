@@ -28,13 +28,14 @@ narrow and respect the board's WIP limits.
 ### Foundation
 
 **Task-001: Confirm architecture decisions and domain vocabulary**
-- Ticket: EK-001.
+- Ticket: EK-001 (review pack), EK-014 (record answers).
 - Review the architecture with the employee-data owner.
 - Confirm the employee identifier strategy, initial employee properties, source naming,
   timestamp semantics and initial authority assumptions.
 - Record unresolved decisions; do not invent source authority.
 - Acceptance: decisions are recorded, ontology terms have definitions, and open
   questions are explicit.
+- Progress: review pack ready (EK-001); answers wait for the data-owner session (EK-014).
 
 **Task-002: Establish Python package, quality gates and repository hygiene**
 - Ticket: EK-002.
