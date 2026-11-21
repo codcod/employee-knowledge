@@ -92,9 +92,13 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
    - `required`: a boolean, default `false`.
    - `reviewer_roles`: optional. A list of non-blank strings.
    - `conflict_rule`: required, either `"manual"` or `"prefer-authoritative"`.
+     `"prefer-authoritative"` with an empty `authoritative` list is refused, because it
+     could never recommend anything (gate G10).
 
    Unknown keys are an error at both levels, for the same reason as ADR-0007: trust
-   settings cannot be added by accident.
+   settings cannot be added by accident. `effective_from` must be a plain TOML date.
+   `tomllib` reads a date-time as a `datetime`, which is a subclass of `date`, so the
+   loader refuses it explicitly (gate G5).
 4. **A policy never waives human review.** Architecture §6 lists "whether human review
    is always required" as a policy field. AGENTS.md "No autonomous promotion" and §3.3
    already answer it: review is always required. The schema therefore has no such key,
@@ -115,7 +119,12 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
    - `unresolved`: the rule is `prefer-authoritative`, but no value, or more than one
      distinct value, comes from authoritative sources.
 
-   Evaluation writes nothing to the graph. Trust state changes only through `review`
+   Only facts in state Candidate, NeedsEvidence or Accepted count. Rejected and
+   Superseded facts are excluded, because a person already set them aside and `accept`
+   refuses a Rejected one (owner decision 2026-11-21, gate G4). Facts that the latest run
+   no longer contains still count, and the rationale flags them. The report's dicts hold
+   strings: `evaluate` looks up the row by `URIRef(d["property"])` and matches sources by
+   `ek.identity.source_uri(id)` (gate G3). Evaluation writes nothing to the graph. Trust state changes only through `review`
    (ADR-0002).
 8. **A policy is in force when `effective_from` is on or before today (UTC).** A policy
    that is not yet in force is treated as no policy, and the CLI warns.
@@ -137,6 +146,9 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
     an error.
 13. **The logic is in `src/ek/policy.py`, independent of the CLI.** The CLI only loads
     files and prints.
+14. **Putting the file in place is the approval.** The model has no "approved" flag. The
+    deployment owner approves a policy by putting it at the configured path, which
+    follows the same review process as `sources.toml`. The ADR says this (gate G11).
 
 ### Tasks
 
@@ -144,7 +156,7 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
 
 - Write `development/decisions/NNNN-authority-policy.md`, using the next free ADR number,
   with status Accepted on owner approval at review. Cover context, the decision
-  (decisions 1–12), alternatives and consequences:
+  (decisions 1–14), alternatives and consequences:
   - Alternatives: authority keys in `sources.toml` (rejected: ADR-0007 forbids authority
     there); the policy stored as RDF in the store (rejected for now: the version string
     on each event is enough); SHACL (rejected: these are business rules, not structure).
@@ -154,7 +166,11 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
   never waived (decision 4), and link the ADR. In §5.3, point "configured authority by
   property" at the policy. In §10, add `policy.py` and `examples/policy.toml` to the
   tree. In §13 Q3 and Q5, note that the mechanism exists and the rows await the data
-  owner (EK-014).
+  owner (EK-014). Also update the statements that would go stale (gate G8):
+  - §13 Q3 ("a versioned policy exists (Task-012)");
+  - the closing paragraph of §13 ("until Task-012 delivers an approved policy");
+  - the comment on `ek:policyVersion` in the ADR-0002 example (`# until a policy exists
+    (Task-012)`), which becomes a pointer to the new ADR.
 
 #### Task 2 — `src/ek/policy.py`
 
@@ -168,8 +184,8 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
 - `in_force(policy: Policy | None, today: date) -> bool`.
 - `version_in_force(policy, today) -> str` returns the policy's version, or `"none"`.
 - `evaluate(policy: Policy | None, discrepancy: dict, today: date) -> dict` returns
-  `{"outcome", "rationale", "policy_version", "recommended": [assertion URIs],
-  "reviewer_roles": [...]}`. It takes one discrepancy dict as built by
+  `{"outcome", "rationale", "recommended": [assertion URIs], "reviewer_roles": [...]}`.
+  The version is reported once, at the top level of the report (gate G12). It takes one discrepancy dict as built by
   `ek.reconcile.build_report`.
 
 #### Task 3 — Report
@@ -179,10 +195,11 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
   "in_force"}`, or `None`, and adds `"policy": evaluate(...)` to every discrepancy. The
   existing keys are unchanged.
 - `src/ek/cli.py`: `report` and `report-json` gain `--policy` (default `DEFAULT_POLICY`)
-  and `--config` (decision 12). The Rich discrepancy table adds one row per discrepancy,
-  `policy <version>: <outcome>: <rationale>`, plus the roles when present. With no
-  policy, the row reads "no authority policy: unresolved". An invalid file prints the
-  error and exits 1.
+  and `--config` (decision 12). After the discrepancy table, outside it so it does not
+  wrap at 80 columns (gate G2), the report prints one line per discrepancy:
+  `<employee_id> <property>: policy <version>: <outcome>: <rationale>`, plus the roles
+  when present. With no policy, the line reads "no authority policy: unresolved". An
+  invalid file prints the error and exits 1.
 
 #### Task 4 — Review records the policy version
 
@@ -213,12 +230,15 @@ All synthetic. Cover:
 - **Loader, row errors:** an unknown property; a duplicate property; an unknown source
   id; an id in both `authoritative` and `secondary`.
 - **Loader, value errors:** `freshness_days` of 0, -1, `"30"` or `true`; an invalid
-  `conflict_rule`; a blank `version`.
+  `conflict_rule`; a blank `version`; a TOML date-time for `effective_from` (G5);
+  `prefer-authoritative` with `authoritative = []` (G10).
 - **In force:** a future `effective_from` is not in force, and `version_in_force` gives
   `"none"`.
 - **Evaluation:** no policy, or no row, gives `no-policy`; a `manual` row gives `manual`;
   a single authoritative value gives `recommend` with that assertion; two authoritative
-  sources that disagree give `unresolved`; no authoritative fact gives `unresolved`.
+  sources that disagree give `unresolved`; no authoritative fact gives `unresolved`; a
+  Rejected or Superseded authoritative fact is ignored (G4). At least one evaluation test
+  runs on real `build_report` output rather than a hand-built dict (G3).
 - **Invariants (regression):**
   - `build_report` with a policy leaves `len(store.dataset)` unchanged, changes no
     `store.state(...)`, and `check_projection()` stays empty.
@@ -232,6 +252,13 @@ All synthetic. Cover:
   policy row, and with no policy file the output reads "no authority policy".
 - Update existing tests that assert `policyVersion == "none"` only where they now pass a
   policy. Do not weaken them.
+- **Existing tests the plan would otherwise break:**
+  - `tests/test_report.py:151`: the report's top-level key set gains `"policy"` (G1).
+  - `tests/test_repository.py` `FORBIDDEN_PATHS` gains `^config/policy\.toml$` (G6).
+  - New `tests/conftest.py` with an autouse fixture that runs
+    `monkeypatch.chdir(tmp_path)`, so CLI tests never read a developer's local
+    `config/policy.toml` (G7). Check that tests using relative `examples/` paths still
+    resolve them from `ROOT`.
 
 ### Acceptance test
 
@@ -249,8 +276,9 @@ uv run employee-knowledge report --config examples/sources.toml --policy example
 #   E-1002 department (People vs Product): "policy example-1: recommend", naming the hr-export value
 uv run employee-knowledge report --config examples/sources.toml --policy /nonexistent.toml
 #   "no authority policy: unresolved"
-uv run employee-knowledge report-json --output "$(mktemp -d)/r.json" --config examples/sources.toml --policy examples/policy.toml
-#   then accept the hr-export E-1002 department assertion URI from that JSON:
+R="$(mktemp -d)/r.json"
+uv run employee-knowledge report-json --output "$R" --config examples/sources.toml --policy examples/policy.toml
+#   then accept the hr-export E-1002 department assertion URI from "$R":
 uv run employee-knowledge review accept <uri> --reviewer demo --reason "checked" --config examples/sources.toml --policy examples/policy.toml
 grep -c 'policyVersion "example-1"' "$EMPLOYEE_KNOWLEDGE_STORE"   # 1
 ```
@@ -305,3 +333,4 @@ grep -c 'policyVersion "example-1"' "$EMPLOYEE_KNOWLEDGE_STORE"   # 1
 - 2026-11-19 — description patched (EK-001 review, step 8): the §13 answers are recorded by EK-014, split from EK-001
 - 2026-11-21 — refined. Owner decisions: mechanism now, rows later (no real policy rows ship); `required` and freshness live in this policy (EK-003 depends on it); file at config/policy.toml like sources.toml; reviewer roles recorded, not checked. Re-graded complexity high → medium, cost L → M. Plan written
 - 2026-11-21 — TO DO → READY: plan complete
+- 2026-11-21 — plan amended at applicability gate (owner-approved routing; 12 non-blocking, 0 blocking): G1/G6/G7 existing tests, repo guard and cwd fixture; G2 policy line outside the table; G3 IRI lookup, tested on real report output; G4 rejected/superseded facts excluded (owner decision); G5 refuse datetime; G8 stale statements in §13 and ADR-0002; G10 refuse prefer-authoritative with no sources; G11 placing the file is the approval; G12 acceptance JSON path kept, duplicate version dropped. G9 folded into EK-003, Q3 added to EK-014

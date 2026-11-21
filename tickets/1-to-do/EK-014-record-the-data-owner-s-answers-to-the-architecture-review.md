@@ -23,7 +23,7 @@ Scope, to be pinned at refinement:
 - **Answers.** Each answer goes inline in architecture §13, in the form used on 2026-11-18. A deferral names who decides and the ticket that needs the answer. An ADR is written only where an answer changes the architecture; reviewer roles (Q5) and AI-provider limits (Q6) are the likely ones.
 - **Business terms.** A confirmed or corrected definition updates the `rdfs:comment` in `src/ek/ontology/employees.ttl`.
 - **Attribute scope (Q2).** An attribute added or excluded under Q2 follows the ontology-first rule (AGENTS.md §3; architecture §4.4): `employees.ttl`, `shapes.ttl`, tests and docs.
-- **Dependent tickets.** Tickets that were waiting on an answer get it in their Description: EK-003 (Q1), EK-004 (Q5), EK-005 (Q10), EK-006 (Q6), EK-007 to EK-009 (Q9), EK-010 (Q8 and Q9).
+- **Dependent tickets.** Tickets that were waiting on an answer get it in their Description: EK-003 (Q1), EK-004 (Q3 and Q5), EK-005 (Q10), EK-006 (Q6), EK-007 to EK-009 (Q9), EK-010 (Q8 and Q9).
 - **Trimming in definitions** (EK-001 review F3, folded): ADR-0008 trims every value, but only `ek:employeeId` and `ek:workEmail` say so, and `ek:workEmail` says both "as the source records it" and "lowercased" (`ek:rawValue` keeps the source text). Settle the wording with the confirmed definitions.
 - **Retire the pack** once everything is recorded. Git history keeps it.
 
@@ -41,3 +41,4 @@ Privacy: the filled-in pack must hold policy answers only, never employee record
 
 - 2026-11-19 — created (TO DO). source: pickle ticket new
 - 2026-11-19 — folded EK-001 review F3 (trimming wording in the business-term definitions)
+- 2026-11-21 — folded EK-004 applicability-gate G11: EK-004 also waits on Q3 (which system owns each attribute)

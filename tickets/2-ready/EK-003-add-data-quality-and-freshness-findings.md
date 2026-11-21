@@ -79,7 +79,8 @@ not build on an unmerged EK-004 branch. Start from a clean tree, and check that
 1. **Findings are computed when the report is built and never stored.** They make no
    graph writes and no trust changes, like absence (ADR-0003). The logic is in
    `src/ek/quality.py`: `findings(store, policy, now) -> list[dict]`, independent of the
-   CLI. `now` is a parameter, so tests control time.
+   CLI. `now` is a parameter, so tests control time. Whether the policy is in force is
+   checked with `ek.policy.in_force(policy, now.date())`, because EK-004 takes a `date`.
 2. **Every finding has `category`, `rationale` and `evidence`.** It also has
    `employee`, `employee_id` and `issuer` where known, and `property` where it applies.
    `evidence` is a list of `{"assertion"?, "source", "source_reference", "observed_at"?}`
@@ -169,7 +170,8 @@ where freshness is tested. Cover:
   non-empty `category`, `rationale` and `evidence`.
 - **CLI:** the `report` output has the "Data-quality findings" table and no "Invalid
   values" table; the `report-json` JSON has `findings`. Update existing report tests that
-  assert the old table titles. The JSON keys are unchanged, so the JSON assertions stay.
+  assert the old table titles, and add `"findings"` to the top-level key-set assertion in
+  `tests/test_report.py`. EK-004 has already added `"policy"` to it.
 
 ### Acceptance test
 
@@ -239,3 +241,4 @@ uv run employee-knowledge report --config examples/sources.toml --policy example
 - 2026-11-19 — description patched (EK-001 review, step 8): the §13 answers are recorded by EK-014, split from EK-001
 - 2026-11-21 — refined. Owner decisions: mechanism now, rules from the EK-004 policy (new hard depends-on EK-004, owner sign-off); staleness from ek:observedAt only, otherwise freshness-unknown; missing-required per employee across all sources' latest runs. Re-graded complexity medium-high → medium, cost M-L → M. Plan written
 - 2026-11-21 — TO DO → READY: plan complete
+- 2026-11-21 — folded EK-004 applicability-gate G9: call `in_force(policy, now.date())`; the report key-set test gains `findings`
