@@ -92,7 +92,9 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
    replaces the unused `SourceAdapter` protocol:
    ```python
    class AdapterPlugin(tp.Protocol):
-       def parse_options(self, options: dict[str, object], where: str) -> dict[str, object]: ...
+       def parse_options(
+           self, options: dict[str, object], where: str
+       ) -> dict[str, object]: ...
        def read(self, path: Path, source: SourceConfig) -> ReadResult: ...
    ```
    - `parse_options` receives every key of the `[[sources]]` entry except the common
