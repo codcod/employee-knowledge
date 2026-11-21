@@ -13,10 +13,11 @@ Last updated: 2026-11-21
 
 ## IN DEVELOPMENT
 
-### employee-knowledge (0/1)
+### employee-knowledge (1/1)
 
 | id | title | depends-on |
 |---|---|---|
+| EK-004 | Define attribute-level source-authority policy model | [] |
 
 ## IN REVIEW
 
@@ -39,7 +40,6 @@ Last updated: 2026-11-21
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
 | EK-003 | Add data-quality and freshness findings | high | medium | M | [EK-004] |  |
-| EK-004 | Define attribute-level source-authority policy model | high | medium | M | [] |  |
 | EK-005 | Add trusted-only and evidence-inclusive query interfaces | high | medium | M | [] |  |
 | EK-012 | Add an extension point for third-party source adapters | high | medium | M | [] |  |
 
