@@ -13,18 +13,18 @@ Last updated: 2026-11-21
 
 ## IN DEVELOPMENT
 
+### employee-knowledge (0/1)
+
+| id | title | depends-on |
+|---|---|---|
+
+## IN REVIEW
+
 ### employee-knowledge (1/1)
 
 | id | title | depends-on |
 |---|---|---|
 | EK-004 | Define attribute-level source-authority policy model | [] |
-
-## IN REVIEW
-
-### employee-knowledge (0/1)
-
-| id | title | depends-on |
-|---|---|---|
 
 ## REWORK
 
