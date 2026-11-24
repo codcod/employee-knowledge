@@ -149,6 +149,7 @@ def test_cli_report_and_json(tmp_path, monkeypatch):
     assert CliRunner().invoke(app, ["report-json", "--output", str(out)]).exit_code == 0
     data = json.loads(out.read_text())
     assert set(data) == {
+        "policy",
         "discrepancies",
         "not_observed",
         "validation_violations",

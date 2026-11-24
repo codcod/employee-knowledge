@@ -11,6 +11,7 @@ reports/
 build/
 dist/
 config/sources.toml
+config/policy.toml
 
 # AI
 .claude/settings.json

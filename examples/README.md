@@ -6,3 +6,5 @@ Synthetic fictional data only. Never commit a production workbook or export.
   one value (E-1002's department), differs only by surrounding spaces on another
   (E-1001's department), and has one row without an employee ID.
 - `sources.toml`: example source configuration. Copy it to `config/sources.toml`.
+- `policy.toml`: example authority policy for the two example sources. Its rows
+  illustrate the format; they are not decisions. Copy it to `config/policy.toml`.

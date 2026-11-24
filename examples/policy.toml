@@ -1,0 +1,24 @@
+# Example authority policy (synthetic). Copy to config/policy.toml (git-ignored).
+#
+# These rows only illustrate the format. They are not decisions: which source is
+# authoritative for which property is for the data owner to approve. Putting a policy
+# at the configured path is what approves it.
+#
+# A policy recommends; it never changes trust. Every fact still needs a review.
+
+version = "example-1"
+effective_from = 2026-01-01
+
+[[properties]]
+property = "department"
+authoritative = ["hr-export"]
+secondary = ["people-directory"]
+conflict_rule = "prefer-authoritative"   # or "manual"
+freshness_days = 365
+required = true
+reviewer_roles = ["example-hr-reviewer"] # recorded for people to read; not checked
+
+[[properties]]
+property = "job_title"
+authoritative = []
+conflict_rule = "manual"

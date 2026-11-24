@@ -1,13 +1,19 @@
 """Discrepancy report (architecture §4.6). Shows evidence; never picks a winner."""
 
 from collections import defaultdict
+from datetime import UTC, date, datetime
 
 from .constants import EK
 from .graph.store import KnowledgeStore
+from .policy import Policy, evaluate, in_force
 from .review import label
 
 
-def build_report(store: KnowledgeStore) -> dict:
+def build_report(
+    store: KnowledgeStore, policy: Policy | None = None, today: date | None = None
+) -> dict:
+    """``policy`` adds a recommendation to each discrepancy; it changes nothing."""
+    today = today or datetime.now(UTC).date()
     observations = store.observations()
     latest = store.latest_runs()
     latest_seen = {src: store.observed(graph) for src, (_, graph) in latest.items()}
@@ -38,21 +44,24 @@ def build_report(store: KnowledgeStore) -> dict:
         values = sorted({f["value"] for f in group})
         accepted = {f["value"] for f in group if f["status"] == "Accepted"}
         if len(values) > 1:
-            discrepancies.append(
-                {
-                    "employee": employee,
-                    "employee_id": group[0]["employee_id"],
-                    "property": prop,
-                    "values": values,
-                    "accepted_conflict": len(accepted) > 1,
-                    "facts": sorted(group, key=lambda f: (f["source"], f["value"])),
-                }
-            )
+            item = {
+                "employee": employee,
+                "employee_id": group[0]["employee_id"],
+                "property": prop,
+                "values": values,
+                "accepted_conflict": len(accepted) > 1,
+                "facts": sorted(group, key=lambda f: (f["source"], f["value"])),
+            }
+            item["policy"] = evaluate(policy, item, today)
+            discrepancies.append(item)
 
     def key(f):
         return (f["employee_id"], f["property"], f["source"], f["value"])
 
     return {
+        "policy": None
+        if policy is None
+        else {"version": policy.version, "in_force": in_force(policy, today)},
         "discrepancies": discrepancies,
         "not_observed": sorted(
             (f for f in facts if not f["observed_in_latest_run"]), key=key
