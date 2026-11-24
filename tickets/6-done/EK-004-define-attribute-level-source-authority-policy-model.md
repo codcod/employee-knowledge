@@ -403,3 +403,4 @@ cost: estimated M, actual M
 Verdict: done.
 - 2026-11-24 — IN REVIEW → DONE: re-review clean: F1-F4 fixed; non-blocking F8/R2/R3 fixed inline, F9 -> EK-015, R1 folded into EK-015, F5-F7/R4 noted; publish pending owner approval
 - 2026-11-24 — published (owner-approved): tidied to 2 commits (2fc0eac feat, fb94c9f docs), pushed `main` first, PR https://github.com/codcod/employee-knowledge/pull/3. CI https://github.com/codcod/employee-knowledge/actions/runs/45413228170 failed (a Rich line-wrap made a test assertion fragile); owner-approved fix 5b8052e (pins COLUMNS in tests/conftest.py), CI https://github.com/codcod/employee-knowledge/actions/runs/45414948003 success. Merging is the owner's
+- 2026-11-24 — merged to main (PR #3, 98bc9f7, https://github.com/codcod/employee-knowledge/commit/98bc9f7)
