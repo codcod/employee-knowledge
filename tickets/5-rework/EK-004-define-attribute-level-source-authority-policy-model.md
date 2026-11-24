@@ -137,8 +137,11 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
 10. **Reviewer roles are recorded in the policy only.** The review command does not check
     them (owner decision 2026-11-21). The report shows the permitted roles beside each
     discrepancy whose property has a row.
-11. **A missing policy file means no policy; an invalid one is an error.** When there is
-    no file, report and review say "no authority policy loaded" and carry on. A file that
+11. **A missing policy file at the default path means no policy; an invalid one, or a
+    missing one named explicitly with `--policy`, is an error.** When there is no file at
+    the default `config/policy.toml`, report and review say "no authority policy loaded"
+    and carry on. (Amended 2026-11-24, review F4: a mistyped `--policy` path must not be
+    recorded silently as "none".) A file that
     is unreadable or invalid makes `report`, `report-json` and every `review` command exit
     1 with the error, and no review event is written. They never fall back to `none`.
 12. **When a policy file exists, the CLI also loads `--config`** (default
@@ -275,7 +278,9 @@ uv run employee-knowledge ingest-excel examples/employees-directory.xlsx --sourc
 uv run employee-knowledge report --config examples/sources.toml --policy examples/policy.toml
 #   E-1002 department (People vs Product): "policy example-1: recommend", naming the hr-export value
 uv run employee-knowledge report --config examples/sources.toml --policy /nonexistent.toml
-#   "no authority policy: unresolved"
+#   exit 1: the named policy file does not exist (review F4)
+(cd "$(mktemp -d)" && uv run --project "$OLDPWD" employee-knowledge report)
+#   no config/policy.toml in that directory: "no authority policy: unresolved"
 R="$(mktemp -d)/r.json"
 uv run employee-knowledge report-json --output "$R" --config examples/sources.toml --policy examples/policy.toml
 #   then accept the hr-export E-1002 department assertion URI from "$R":
@@ -325,7 +330,37 @@ grep -c 'policyVersion "example-1"' "$EMPLOYEE_KNOWLEDGE_STORE"   # 1
 
 ## Review
 
-<!-- empty until IN REVIEW -->
+Review 2026-11-24, branch `feat/EK-004-authority-policy` (47194bc, fb9a0fc).
+
+| id | severity | class | disposition | description | evidence | suggestion |
+|---|---|---|---|---|---|---|
+| F1 | blocking | correctness | — | Policy strings are printed through `rich.print` unescaped, so they are read as Rich markup. A version such as `v2 [/draft]` makes `review` record the event and then exit 1 with a `MarkupError`. That contradicts "a refused action records nothing" (`docs/operating.md`). `[/x]` in roles or a property name crashes `report`. `[draft]` disappears from the screen while the event records it. | Reproduced: `review request-evidence <uri> … --policy p.toml` with `version = "v2 [/draft]"` gives exit 1, and `grep -c 'policyVersion "v2 \[/draft\]"'` on the store prints 1. Code: `src/ek/cli.py` `_policy`, `_policy_line`, and the `_review` print after `store.save()`. | Escape every interpolated policy string (`rich.markup.escape`), including `exc` in `_policy`. Add a regression test with a bracketed version and role, including the no-event-on-failure path. |
+| F2 | blocking | correctness | — | `property = ["department"]` (or an inline table) raises a raw `TypeError` from the dict lookup instead of a `PolicyError`. That breaks EK-004 decision 11: an invalid file must exit 1 with the error. | Reproduced: `load_policy` gives `TypeError: cannot use 'list' as a dict key`, and `report --policy p1.toml` prints a traceback. Code: `src/ek/policy.py` `_row`, `name not in FIELD_PREDICATES`. | Check `isinstance(name, str)` before the lookup, and add a test. |
+| F3 | blocking | correctness | — | A policy file that is not valid UTF-8 raises an uncaught `UnicodeDecodeError`, which breaks EK-004 decision 11. | Reproduced: a file with bytes `\xff\xfe` passed to `report --policy` prints a traceback. Code: the `try` block in `src/ek/policy.py` `load_policy`. | Catch `UnicodeDecodeError` as "cannot be read", and add a test. |
+| F4 | blocking | correctness | — | An explicit `--policy` path that does not exist (a typo) is treated silently as "no policy". Review then records `policyVersion "none"` although the reviewer meant to apply a policy. The plan mandates this (EK-004 decision 11), and the owner changed that decision on 2026-11-24. | `src/ek/cli.py` `_policy`, `path.exists()` for every path. Plan acceptance step: `--policy /nonexistent.toml`. | A missing file at the default path still means no policy. A missing file named explicitly with `--policy` exits 1 and records nothing. Amend decision 11 and the acceptance step. |
+| F5 | non-blocking | correctness | noted | The CLI's "not in force" warning and `build_report` each compute today, so a run that crosses UTC midnight on `effective_from` could warn and still evaluate the policy as in force. | `src/ek/cli.py` `_policy` (`_today()`), `src/ek/reconcile.py` `build_report` (`datetime.now`). Traced; the window is a few milliseconds once a year. | Pass one `today` from the CLI if this ever matters. |
+| F6 | non-blocking | test-gap | noted | Only `property` was found to crash on a non-scalar value. Arrays and tables in the other row keys already give a clean `PolicyError`, but no test proves that. | Hand check: `conflict_rule = {x = 1}` and `required = [1]` give `PolicyError`. | Add type-fuzz cases if the loader changes again. |
+| F7 | non-blocking | design | noted | `ek:policyVersion` records the version string, not the file's content, so two policies with one version cannot be told apart. ADR-0010's Consequences already accept this. | `src/ek/review.py:94`; ADR-0010 Consequences. | Record the file's sha256 later if audit traceability needs it. |
+| F8 | non-blocking | spec-unclear | fixed inline | The outcome table in `docs/trust-model.md` says the report "names" the recommended value. It names the source, because rationales never carry values. | `docs/trust-model.md`, Authority policy table; `src/ek/policy.py` `evaluate`. | Reworded to: the report names its source; `report-json` lists its assertions. |
+| F9 | non-blocking | correctness | new ticket (EK-015) | Pre-existing on `main`, not caused by this branch: workbook values, source references and `ConfigError`/`SourceError` messages go through `rich.print` unescaped. | Reproduced on `main` (76745dc): a synthetic department value of `[/x]` makes `report` exit with a `MarkupError` traceback. | EK-015, "Escape source and config text in CLI output". |
+
+Disposition summary: 4 blocking (F1–F4) → rework. Non-blocking: 1 fixed inline (F8), 1 new ticket (F9 → EK-015), 3 noted (F5, F6, F7).
+cost: estimated M, actual M
+
+Verdict: rework. F1–F4 are fixed on the branch, then a scoped re-review follows.
+
+- [x] Reviewer independence settled (step 0): delegated. The orchestrator wrote the branch in this session. A fresh sub-agent ran steps 1–4a with `hunt: angle 7 only`. Its 4 findings were re-verified by hand and none was discarded. Its F1, F2, F3 and F4 became F1, F3, F7 and F8 here.
+- [x] In-tree stale-branch check (step 0a): `pickle doctor` gave 0 errors and 0 warnings after the rebase onto `main`.
+- [x] Implementation audit (steps 1, 2): the acceptance test was re-run verbatim by the delegated reviewer and by the orchestrator, and is green (52 and 178 passed, ruff clean). Tasks 1–6 and decisions 1–14 were met as planned; F4 is a defect in decision 11 itself.
+- [x] Correctness hunt (step 3): the host tool path. The orchestrator ran `/code-review` (medium) on `main...feat/EK-004-authority-policy`. It reported 4 findings (F2, F4, F5, F6 here); all were re-verified and none was discarded. Angle 7 ran separately, in the delegated reviewer. Every correctness row is reproduced, except F5, which is traced.
+- [x] Consistency audit (step 4): no stale `POLICY_VERSION`, "Task-012" or "until a policy exists" references. ADR-0007:42's "(Task-012)" is an accepted forward reference and is left as is.
+- [x] Documentation audit (step 4a): `docs/trust-model.md`, `docs/operating.md`, `docs/source-onboarding.md` and `examples/README.md` are covered, and nothing in `docs/` links to `development/`. No docs build is configured. F8 is the only wording issue.
+- [x] Docs-readability pass (step 4b): consciously skipped (optional). The delegated reviewer checked the changed prose against the code.
+- [x] Findings recorded (step 5)
+- [x] Ticket moved to `5-rework/` (step 6)
+- [x] Governing documents reconciled (step 7): the branch carries the ADR-0010, architecture and roadmap edits. F4 amends decision 11 (plan amended inline).
+- [x] Impact sweep (step 8): EK-003 reads `in_force`, `required` and `freshness_days`, none of which changes. F4 changes only the CLI. EK-015 is filed for F9.
+- [ ] Approval and publish (step 9): pending the re-review.
 
 ## History
 
@@ -336,3 +371,5 @@ grep -c 'policyVersion "example-1"' "$EMPLOYEE_KNOWLEDGE_STORE"   # 1
 - 2026-11-21 — plan amended at applicability gate (owner-approved routing; 12 non-blocking, 0 blocking): G1/G6/G7 existing tests, repo guard and cwd fixture; G2 policy line outside the table; G3 IRI lookup, tested on real report output; G4 rejected/superseded facts excluded (owner decision); G5 refuse datetime; G8 stale statements in §13 and ADR-0002; G10 refuse prefer-authoritative with no sources; G11 placing the file is the approval; G12 acceptance JSON path kept, duplicate version dropped. G9 folded into EK-003, Q3 added to EK-014
 - 2026-11-21 — READY → IN DEVELOPMENT: picked up
 - 2026-11-21 — IN DEVELOPMENT → IN REVIEW: acceptance green
+- 2026-11-24 — plan amended inline (review F4, owner decision): decision 11 now refuses a missing file named explicitly with --policy; the acceptance step was changed to match
+- 2026-11-24 — IN REVIEW → REWORK: review: 4 blocking (F1-F4); F8 fixed inline, F9 -> EK-015, F5-F7 noted

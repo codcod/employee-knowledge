@@ -9,7 +9,7 @@ hand — edit the tickets. Hand-written planning notes live in [`NOTES.md`](NOTE
 **WIP limits (per child-project):**
 - `employee-knowledge`: `3-in-development/` ≤ 1 · `4-in-review/` ≤ 1
 
-Last updated: 2026-11-21
+Last updated: 2026-11-24
 
 ## IN DEVELOPMENT
 
@@ -20,11 +20,10 @@ Last updated: 2026-11-21
 
 ## IN REVIEW
 
-### employee-knowledge (1/1)
+### employee-knowledge (0/1)
 
 | id | title | depends-on |
 |---|---|---|
-| EK-004 | Define attribute-level source-authority policy model | [] |
 
 ## REWORK
 
@@ -32,6 +31,7 @@ Last updated: 2026-11-21
 
 | id | title | open findings |
 |---|---|---|
+| EK-004 | Define attribute-level source-authority policy model | review: 4 blocking (F1-F4); F8 fixed inline, F9 -> EK-015, F5-F7 noted |
 
 ## READY (impact order, per child)
 
@@ -50,6 +50,7 @@ Last updated: 2026-11-21
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
 | EK-014 | Record the data owner's answers to the architecture review | high | medium | M | [EK-001] |  |
+| EK-015 | Escape source and config text in CLI output | medium | low | S | [] |  |
 | EK-010 | Add source onboarding and operational controls | medium | medium | M | [] |  |
 | EK-006 | Design and prototype constrained natural-language-to-SPARQL | medium | high | L | [] |  |
 | EK-007 | Implement Confluence read-only adapter | medium | medium-high | L | [] |  |
