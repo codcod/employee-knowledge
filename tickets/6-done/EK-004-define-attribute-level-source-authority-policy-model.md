@@ -360,11 +360,11 @@ Verdict: rework. F1–F4 are fixed on the branch, then a scoped re-review follow
 - [x] Ticket moved to `5-rework/` (step 6)
 - [x] Governing documents reconciled (step 7): the branch carries the ADR-0010, architecture and roadmap edits. F4 amends decision 11 (plan amended inline).
 - [x] Impact sweep (step 8): EK-003 reads `in_force`, `required` and `freshness_days`, none of which changes. F4 changes only the CLI. EK-015 is filed for F9.
-- [ ] Approval and publish (step 9): pending the re-review.
+- [ ] Approval and publish (step 9): pending the owner's approval.
 
-### Rework fix record — round 1 (commit 42280a1)
+### Rework fix record — round 1 (commit e5f1de9)
 
-Branch tip before the fix: a0838c2. These are the SHAs after the branch was rebased onto `main` (cd6d47f) for this re-review; before the rebase they were 03e72a6 and e95092d. `git diff a0838c2..42280a1` is the fix.
+Branch tip before the fix: 29a909b, so `git diff 29a909b..e5f1de9` is the fix. The branch was rebased onto `main` twice for bookkeeping; earlier records named 03e72a6 and 42280a1, which are the same change (re-review R3).
 
 - **F1:** `src/ek/cli.py` passes every interpolated policy string through `rich.markup.escape`: the `_policy` error and not-in-force lines, the `_policy_line` output, and the version in the `_review` confirmation. Tests: `test_bracketed_policy_text_is_printed_literally` (report, plus a review that exits 0 and records `v2 [/draft]`) and `test_bracketed_text_in_policy_error_is_printed_literally`.
 - **F2:** `src/ek/policy.py` `_row` checks `isinstance(name, str)` before the lookup. Test: `test_non_string_property_is_a_policy_error`, with an array and with an inline table.
@@ -385,3 +385,20 @@ Branch tip before the fix: a0838c2. These are the SHAs after the branch was reba
 - 2026-11-24 — plan amended inline (review F4, owner decision): decision 11 now refuses a missing file named explicitly with --policy; the acceptance step was changed to match
 - 2026-11-24 — IN REVIEW → REWORK: review: 4 blocking (F1-F4); F8 fixed inline, F9 -> EK-015, F5-F7 noted
 - 2026-11-24 — REWORK → IN REVIEW: findings fixed
+
+### Scoped re-review — round 1 (2026-11-24)
+
+Delegated to a fresh reviewer (steps 0a–4a, `hunt: one pass`) over `29a909b..e5f1de9`. F1–F4 and F8 are verified closed, each with a test. The acceptance test was re-run: 60 and 186 passed, ruff clean, and the manual steps behave as amended. The orchestrator re-verified all 4 new rows by hand (R1 and R2 reproduced; R3 and R4 checked); none was discarded.
+
+| id | severity | class | disposition | description | evidence | suggestion |
+|---|---|---|---|---|---|---|
+| R1 | non-blocking | correctness | folded (EK-015) | The F1 fix escapes `[...]` but not emoji shortcodes, so a version of `v:warning:1` is shown as `v⚠1` while the event records the literal text. | Reproduced: `rich` prints `escape("v:warning:1")` as `v⚠1`. Code: `src/ek/cli.py` `_policy`, `_policy_line`, `_review`. | Print policy text as `rich.text.Text`, or with emoji off. Added to EK-015. |
+| R2 | non-blocking | stale-xref | fixed inline | ADR-0010's "Failure handling" still said a missing file always means no policy, but F4 changed that. | `development/decisions/0010-authority-policy.md:85` before 9db7b51. | Reworded in 9db7b51 on the branch. |
+| R3 | non-blocking | stale-xref | fixed inline | The round-1 fix record named SHAs that the bookkeeping rebase had replaced. | `git branch --contains 42280a1` prints nothing. | Repointed to `29a909b..e5f1de9` above. |
+| R4 | non-blocking | correctness | noted | A dangling symlink at the default `config/policy.toml` still means "no policy", so review records `"none"`. This fits decision 11 as written. | Reproduced by the reviewer: a symlink to a missing target gives "No authority policy loaded" and exit 0. | Treat `is_symlink()` as present if deployments start symlinking the policy. |
+
+Re-review disposition summary: 0 blocking. Non-blocking: 2 fixed inline (R2, R3), 1 folded (R1 → EK-015), 1 noted (R4).
+cost: estimated M, actual M
+
+Verdict: done.
+- 2026-11-24 — IN REVIEW → DONE: re-review clean: F1-F4 fixed; non-blocking F8/R2/R3 fixed inline, F9 -> EK-015, R1 folded into EK-015, F5-F7/R4 noted; publish pending owner approval
