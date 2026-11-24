@@ -265,6 +265,12 @@ Initial discrepancy categories:
 - source records that cannot be mapped or resolved confidently; and
 - unexpected changes between source versions or ingestion runs.
 
+The data-quality categories (missing required attributes, stale assertions, assertions
+whose freshness is unknown, validation failures, broken manager references, unresolved
+records) are computed per report by
+`ek.quality` and never stored; they carry no trust state and never change it. Required
+properties and freshness windows come from the authority policy (§6).
+
 Do not label every difference as an error. Some values may legitimately vary over time.
 The reconciliation layer must distinguish current-state conflicts from historical
 changes when effective dates or source versions are available.
@@ -496,6 +502,7 @@ employee-knowledge/
 │   ├── identity.py
 │   ├── ingest.py
 │   ├── policy.py              # source-authority policy (ADR-0010)
+│   ├── quality.py             # data-quality findings, computed per report
 │   ├── reconcile.py
 │   ├── review.py              # review actions and state machine (ADR-0002)
 │   ├── validation.py          # SHACL validator (ADR-0006)
@@ -584,7 +591,8 @@ keep their decision inline. The open questions go to the data owner in
     company-domain answer, which would tie the generic project to one organisation.
 15. Should the manager be modelled as a relationship between employees or as a
     manager-ID value? *Decided (2026-11-18):* a manager-ID string, as the source states it.
-    Task-010 resolves it to an employee and reports broken references.
+    Task-010 (EK-003) resolves it to an employee of the same issuer and reports broken
+    references.
 16. Which CI platform should run tests and lint? *Decided (2026-11-18):* GitHub Actions.
 
 Provisional defaults are not business rules. Each stays marked as provisional in code and

@@ -118,12 +118,43 @@ has been asserted, whatever their review state. It shows each value with its sou
 review state and every place it was observed. It also flags:
 
 - conflicting values that are both accepted;
-- values the latest ingestion of their source no longer contained;
-- values that failed structural validation;
-- rows that the latest ingestion of each source could not use.
+- values the latest ingestion of their source no longer contained.
+
+Values that failed structural validation and rows that could not be used are listed
+with the data-quality findings below.
 
 A value missing from the latest run keeps its review state: absence is evidence to
 review, not a deletion. The report never chooses a winner.
+
+## Data-quality findings
+
+Quality is not trust. A value can be accepted and still stale, or well-formed but
+unverified. The report lists data-quality findings separately from review states.
+Each finding has a category, a fixed rationale and evidence: the assertions and source
+records (for Excel: workbook, sheet and row) it is based on.
+
+| Category | When |
+|---|---|
+| invalid-value | A value failed structural validation in any ingestion run. |
+| unresolved-identity | A row in the latest ingestion of its source could not be tied to an employee, for example because its employee ID is missing or appears twice. |
+| broken-manager-reference | A manager employee ID is not the ID of any known employee from the same ID issuer. IDs from other issuers and names are never used to resolve it. |
+| missing-required | The authority policy marks a property as required, and no source's latest ingestion contained it for an employee who appears in at least one latest ingestion. |
+| stale | The policy sets a freshness window for the property, and the newest observation time of a value is older than that window. |
+| freshness-unknown | The policy sets a freshness window, but no observation of the value has an observation time, or one of them has a time that cannot be used. |
+
+The first three are always checked. The last three need an authority policy in force:
+without one, the report says these checks are off.
+
+Freshness uses only the observation time that a source supplies. Ingestion time is never
+used in its place, so a source that supplies no observation time, such as an Excel
+workbook, gives `freshness-unknown` for every value of a property with a window. An
+observation time without a timezone, or one that cannot be read, is not used either; no
+timezone is assumed. If any observation of a value has such a time, the value is
+`freshness-unknown`, never `stale`, because which observation is newest cannot be known.
+
+Findings are worked out each time the report is built. They are never stored, and they
+never change a review state. There is no severity scale: how serious a finding is
+remains a decision for the data owner.
 
 ## Current limitations
 
@@ -136,3 +167,5 @@ review, not a deletion. The report never chooses a winner.
   exception: they are lowercased first.
 - Unusable rows are reported for the latest run of each source only. Earlier runs keep
   them in their run graphs.
+- A row whose employee ID is present but whose other cells are all blank stores no
+  assertion, so that employee cannot get a missing-required finding.

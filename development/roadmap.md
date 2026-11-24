@@ -107,6 +107,8 @@ narrow and respect the board's WIP limits.
   broken-manager-reference and stale-data findings.
 - Keep quality dimensions separate from trust status.
 - Acceptance: each finding has a category, severity/rationale and evidence reference.
+- Progress: findings for all six categories, computed per report (EK-003). Required and
+  freshness rules come from the authority policy; no severity scale yet.
 
 **Task-011: Implement explicit review and audited promotion**
 - Status: done in M0.

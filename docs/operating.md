@@ -105,7 +105,7 @@ uv run employee-knowledge report [--policy <path>] [--config <path>]
 uv run employee-knowledge report-json [--output reports/discrepancies.json] [--policy <path>] [--config <path>]
 ```
 
-`report` prints up to four tables:
+`report` prints up to three tables:
 
 - **Discrepancies:** every employee and property with more than one distinct value, each
   value with its source and review state. A row marks groups where conflicting values
@@ -113,15 +113,24 @@ uv run employee-knowledge report-json [--output reports/discrepancies.json] [--p
   policy's recommendation, or "no authority policy: unresolved".
 - **Not observed in the latest run:** values that the most recent ingestion of their
   source no longer contained. Their review state is unchanged.
-- **Invalid values:** values that failed structural validation in any run.
-- **Quarantined rows:** rows from the latest run of each source that could not be used,
-  with the reason.
+- **Data-quality findings:** one row per finding, with its category, employee,
+  property, evidence (source id and source reference) and rationale. It prints no values. The
+  categories are invalid values, unusable rows (latest run of each source), broken
+  manager references and, when an authority policy is in force, missing required
+  properties and stale or freshness-unknown values. Without a policy in force, a line
+  says the required and freshness checks are off. A policy row turns these checks on
+  for its property with `required = true` and `freshness_days`. See
+  [trust-model.md](trust-model.md) for each category.
 
 `report-json` writes the same report to a file, adding assertion and employee URIs and,
 for every value, each observation: run, source reference, exact source text, observation
 time (if supplied) and validation result. Its `policy` key gives the policy version and
 whether it is in force. Each discrepancy's `policy` gives the outcome, the rationale,
-the recommended assertion URIs and the reviewer roles. `reports/` is git-ignored.
+the recommended assertion URIs and the reviewer roles. The `findings` key lists every
+data-quality finding with its `category`, `rationale` and `evidence` (assertion URI,
+source, source reference and, if supplied, observation time), and its employee and
+property where they apply. The `validation_violations` and `quarantined` keys are
+unchanged. `reports/` is git-ignored.
 
 The report shows employee data. Treat it like the store.
 
@@ -182,6 +191,9 @@ uv run employee-knowledge ingest-excel examples/employees-directory.xlsx --sourc
 # One discrepancy: E-1002's department is "People" in HR and "Product" in the
 # directory. E-1001's " Engineering " is not one: it matches after trimming. With the
 # example policy, the report recommends the HR value; nothing is accepted yet.
+# Data-quality findings: E-1002's manager E-1004 is not an employee, the directory row
+# without an ID, and, with the example policy, freshness-unknown for each department
+# value (the workbooks give no observation time).
 uv run employee-knowledge report
 uv run employee-knowledge report-json --output reports/demo.json
 
