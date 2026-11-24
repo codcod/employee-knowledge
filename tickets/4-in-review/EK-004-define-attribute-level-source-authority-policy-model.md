@@ -362,9 +362,9 @@ Verdict: rework. F1–F4 are fixed on the branch, then a scoped re-review follow
 - [x] Impact sweep (step 8): EK-003 reads `in_force`, `required` and `freshness_days`, none of which changes. F4 changes only the CLI. EK-015 is filed for F9.
 - [ ] Approval and publish (step 9): pending the re-review.
 
-### Rework fix record — round 1 (commit 03e72a6)
+### Rework fix record — round 1 (commit 42280a1)
 
-Branch tip before the fix: e95092d (the branch rebased onto `main` 737098b).
+Branch tip before the fix: a0838c2. These are the SHAs after the branch was rebased onto `main` (cd6d47f) for this re-review; before the rebase they were 03e72a6 and e95092d. `git diff a0838c2..42280a1` is the fix.
 
 - **F1:** `src/ek/cli.py` passes every interpolated policy string through `rich.markup.escape`: the `_policy` error and not-in-force lines, the `_policy_line` output, and the version in the `_review` confirmation. Tests: `test_bracketed_policy_text_is_printed_literally` (report, plus a review that exits 0 and records `v2 [/draft]`) and `test_bracketed_text_in_policy_error_is_printed_literally`.
 - **F2:** `src/ek/policy.py` `_row` checks `isinstance(name, str)` before the lookup. Test: `test_non_string_property_is_a_policy_error`, with an array and with an inline table.
