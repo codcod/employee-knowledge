@@ -274,6 +274,16 @@ Checklist:
 - [x] Findings recorded (step 5).
 - [x] Ticket moved to `5-rework/` (step 6a).
 
+### Rework fix record — round 1 (commit cc797d3)
+
+- F1: `quality.findings` takes `today` (default `now.date()`) for the in-force check, and `build_report` passes its own `today`, so the header, recommendations and findings use one date. Test `test_report_uses_one_date_for_policy_and_findings`.
+- F2: any `ek:observedAt` present but unusable (no timezone, unreadable) gives `freshness-unknown` (UNKNOWN_TZ, evidence = those observations), never `stale`. Test `test_newer_time_without_timezone_is_never_stale_on_an_older_one`; `docs/trust-model.md` says so.
+- F3: `findings` raises `ValueError("now must be timezone-aware")` for a naive `now`. Test `test_naive_now_is_refused`.
+- F4: the Evidence cell shows `<source id>: <source reference>`. CLI test checks two sources with the same reference; `docs/operating.md` updated.
+- F9 (fixed inline): the CLI test also runs `report` with an in-force policy and asserts the "checks are off" note is absent.
+- F10 (fixed inline): §4.6 lists freshness-unknown.
+- Checks: `uv run pytest` 205 passed; `ruff check` and `ruff format --check` clean; manual synthetic acceptance matches the plan.
+
 ## History
 
 - 2026-11-18 — created (TO DO). source: chat: migrated from roadmap Task-010 when Brine was set up
@@ -286,3 +296,4 @@ Checklist:
 - 2026-11-24 — READY → IN DEVELOPMENT: picked up
 - 2026-11-24 — IN DEVELOPMENT → IN REVIEW: acceptance green (202 tests, ruff clean; manual synthetic run matches plan)
 - 2026-11-24 — IN REVIEW → REWORK: review round 1: 4 blocking (F1–F4)
+- 2026-11-24 — REWORK → IN REVIEW: findings fixed (round 1)
