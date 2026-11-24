@@ -254,3 +254,4 @@ uv run employee-knowledge report --config examples/sources.toml --policy example
 - 2026-11-24 — applicability gate (fresh sub-agent): 0 blocking, 5 non-blocking, routing approved by the owner
 - 2026-11-24 — plan amended inline: acceptance step drops `--policy /nonexistent.toml` (EK-004 makes a missing named file exit 1); an `ek:observedAt` without a timezone gives `freshness-unknown` (owner decision); §13 references corrected (Q2 related, Q5 dropped; freshness question folded into EK-014); `today` defaults to `now.date()`; findings-table cells escaped; `report` docstring updated
 - 2026-11-24 — READY → IN DEVELOPMENT: picked up
+- 2026-11-24 — IN DEVELOPMENT → IN REVIEW: acceptance green (202 tests, ruff clean; manual synthetic run matches plan)

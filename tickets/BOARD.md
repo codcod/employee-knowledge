@@ -13,18 +13,18 @@ Last updated: 2026-11-24
 
 ## IN DEVELOPMENT
 
+### employee-knowledge (0/1)
+
+| id | title | depends-on |
+|---|---|---|
+
+## IN REVIEW
+
 ### employee-knowledge (1/1)
 
 | id | title | depends-on |
 |---|---|---|
 | EK-003 | Add data-quality and freshness findings | [EK-004] |
-
-## IN REVIEW
-
-### employee-knowledge (0/1)
-
-| id | title | depends-on |
-|---|---|---|
 
 ## REWORK
 
