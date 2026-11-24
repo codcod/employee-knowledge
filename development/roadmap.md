@@ -123,6 +123,8 @@ narrow and respect the board's WIP limits.
 - Do not populate unapproved assumptions as facts.
 - Acceptance: policy evaluation is testable and a conflict without a policy remains
   unresolved/untrusted.
+- Progress: the policy model, evaluation and policy-version recording are in place
+  (EK-004, ADR-0010). The rows await the data owner (EK-014).
 
 ### User and AI interfaces
 

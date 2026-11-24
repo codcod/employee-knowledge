@@ -60,7 +60,8 @@ review action by a named reviewer, with a non-empty reason, changes the state:
 | reopen | rejected | candidate |
 
 Every action is recorded in the audit graph as an event: who, why, when, the state
-before and after, and the policy version (`none` until an authority policy exists).
+before and after, and the version of the authority policy in force (`none` when there
+is none; see below).
 Events are never edited or deleted; the current state is the result of the latest one.
 The audit graph is the only record of trust. Accepted assertions are placed in the
 trusted graph and every other state in the untrusted graph, and both graphs can be
@@ -78,6 +79,37 @@ discrepancy. They never review an assertion on their own.
 
 Validation is separate from trust. A value can be well-formed and still wrong. Passing
 validation does not make an assertion trusted.
+
+## Authority policy
+
+No source is trusted wholesale. Which source to believe is decided per property, in an
+authority policy that the data owner approves. Each policy row names, for one property:
+
+- the authoritative sources, and any acceptable secondary sources;
+- a freshness window in days;
+- whether every employee must have the property;
+- the reviewer roles permitted to review it; and
+- a conflict rule: `manual` (a reviewer chooses) or `prefer-authoritative`.
+
+For each discrepancy, the report shows what the policy recommends:
+
+| Outcome | Meaning |
+|---|---|
+| no policy | No policy is in force, or it has no row for the property. The conflict stays unresolved. |
+| manual | The policy leaves the choice to a reviewer. |
+| recommend | Exactly one value comes from the authoritative sources. The report names its source; `report-json` lists its assertions. |
+| unresolved | The authoritative sources assert no value, or more than one. |
+
+Rejected and superseded values are not counted, because someone has already set them
+aside. A recommended value that the latest ingestion no longer contained is still
+counted, and the report says so.
+
+A recommendation changes nothing. The value stays a candidate until a reviewer accepts
+it, with a reason, like any other. No policy setting can turn review off. Each review
+event records the version of the policy in force at the time.
+
+A policy is in force from its `effective_from` date. Until then, it is treated as
+absent.
 
 ## Discrepancies
 
@@ -97,6 +129,8 @@ review, not a deletion. The report never chooses a winner.
 
 - The reviewer name is a free-text local label. It does not authenticate anyone and must
   not be relied on as access control.
+- The reviewer roles in the authority policy are not checked. They tell people who
+  should review a property; they do not stop anyone else.
 - Values are compared exactly as written, after trimming surrounding whitespace, so
   differences in letter case count as discrepancies. Work email addresses are the
   exception: they are lowercased first.

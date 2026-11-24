@@ -30,7 +30,7 @@ Each review action writes one event to `urn:employee-knowledge:graph:audit`:
     ek:toState       ek:Accepted ;
     ek:reviewer      "local-label" ;          # a label, not authentication
     ek:reviewReason  "Checked against HR" ;
-    ek:policyVersion "none" ;                 # until a policy exists (Task-012)
+    ek:policyVersion "none" ;                 # or the policy in force (ADR-0010)
     ek:sequence      42 ;                     # store-wide, strictly increasing
     prov:endedAtTime "…"^^xsd:dateTime ;
     ek:supersededBy  <other-assertion> .      # optional, only on supersede
