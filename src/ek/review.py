@@ -11,8 +11,6 @@ from .constants import EK
 from .graph.store import KnowledgeStore
 from .validation import validate
 
-POLICY_VERSION = "none"  # until an authority policy exists (Task-012)
-
 # action -> (action IRI, allowed from-states, to-state)
 TRANSITIONS = {
     "accept": (EK.Accept, {EK.Candidate, EK.NeedsEvidence, EK.Superseded}, EK.Accepted),
@@ -48,9 +46,11 @@ def review(
     reviewer: str,
     reason: str,
     superseded_by: URIRef | None = None,
+    policy_version: str = "none",
 ) -> ReviewOutcome:
     """Record one review event and update the projection, in memory. Caller saves.
-    ``reviewer`` is a local label, not authentication."""
+    ``reviewer`` is a local label, not authentication. ``policy_version`` is the
+    authority policy in force (ADR-0010), or "none"."""
     if action not in TRANSITIONS:
         raise ReviewError(f"Unknown review action '{action}'")
     if not reviewer.strip():
@@ -91,7 +91,7 @@ def review(
     g.add((event, EK.toState, to_state))
     g.add((event, EK.reviewer, Literal(reviewer.strip())))
     g.add((event, EK.reviewReason, Literal(reason.strip())))
-    g.add((event, EK.policyVersion, Literal(POLICY_VERSION)))
+    g.add((event, EK.policyVersion, Literal(policy_version)))
     g.add((event, EK.sequence, Literal(store.next_sequence())))
     g.add((event, PROV.endedAtTime, Literal(datetime.now(UTC), datatype=XSD.dateTime)))
     if superseded_by is not None:

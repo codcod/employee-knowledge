@@ -356,8 +356,9 @@ context rather than overwriting evidence.
 ### 5.3 Source
 
 A source describes a system, workbook family, connector or dataset. Store metadata such
-as source owner, source type, configured authority by property, refresh cadence, access
-classification and connector configuration version. Do not store secrets in the source
+as source owner, source type, refresh cadence, access classification and connector
+configuration version. Authority by property is configured in the source-authority policy
+(§6), not on the source. Do not store secrets in the source
 metadata or repository.
 
 ### 5.4 Review/audit event
@@ -380,8 +381,14 @@ Define a policy matrix before automating resolution. A policy row should identif
 - freshness window;
 - whether human review is always required;
 - conflict-resolution rule;
-- permitted reviewer role; and
+- permitted reviewer role;
+- whether the property is required (used by data-quality findings); and
 - effective date/version of the policy.
+
+A policy never waives human review: "No autonomous promotion" (§3.3) answers the
+"always required" question, so it is not configurable. A policy recommends; only review
+events change trust. The policy model is
+[ADR-0010](decisions/0010-authority-policy.md).
 
 Until a policy is approved, ingest into untrusted and report the conflict. Source
 precedence must never be inferred from file names, row order, last-modified timestamps
@@ -476,7 +483,8 @@ employee-knowledge/
 │   ├── README.md
 │   ├── employees.xlsx
 │   ├── employees-directory.xlsx
-│   └── sources.toml
+│   ├── sources.toml
+│   └── policy.toml            # synthetic authority policy (ADR-0010)
 ├── src/ek/
 │   ├── adapters/
 │   │   ├── base.py
@@ -487,6 +495,7 @@ employee-knowledge/
 │   ├── ontology/              # employees.ttl, shapes.ttl (package data)
 │   ├── identity.py
 │   ├── ingest.py
+│   ├── policy.py              # source-authority policy (ADR-0010)
 │   ├── reconcile.py
 │   ├── review.py              # review actions and state machine (ADR-0002)
 │   ├── validation.py          # SHACL validator (ADR-0006)
@@ -543,12 +552,14 @@ keep their decision inline. The open questions go to the data owner in
    excluded?
 3. Which system owns each attribute (for example, employment status, department,
    manager, location and display name)? *Decided (2026-11-18):* no source is authoritative until
-   a versioned policy exists (Task-012); every fact needs a review.
+   an approved versioned policy names it (ADR-0010); every fact needs a review. The
+   policy mechanism exists; its rows await the data owner (EK-014).
 4. Are historical values needed, and do sources provide effective dates or only
    last-modified timestamps? *Decided (2026-11-18):* current state only. Run graphs keep what
    each run saw; effective dates wait until a source provides them.
 5. Who is allowed to review/promote facts, and what evidence is required for each
-   property?
+   property? The policy can record reviewer roles per property (ADR-0010); the roles
+   themselves await the data owner (EK-014).
 6. Which employee data may be sent to an AI provider, under what controls, and which
    fields must never leave the controlled environment?
 7. What is the intended production graph store and deployment environment?
@@ -578,7 +589,7 @@ keep their decision inline. The open questions go to the data owner in
 
 Provisional defaults are not business rules. Each stays marked as provisional in code and
 docs until the project owner answers the question. No source is authoritative for any
-property until Task-012 delivers an approved policy, and only the current state is
+property until an approved policy (ADR-0010) names it, and only the current state is
 modelled.
 
 Until these are answered, keep connector access disabled, ingest only synthetic data,

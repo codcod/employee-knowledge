@@ -48,6 +48,10 @@ Copy `examples/sources.toml` to start. Each `[[sources]]` entry has:
 Unknown keys are an error. There is no setting for trust: every ingested value starts
 untrusted.
 
+A new source is not authoritative for anything. It becomes authoritative for a property
+only when an approved authority policy names it for that property (see
+[operating.md](operating.md)). Even then, its values still need a review.
+
 ## Confluence, Jira and Power BI
 
 Not available yet. These connectors stay disabled until the questions above are answered

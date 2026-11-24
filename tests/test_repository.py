@@ -16,6 +16,7 @@ FORBIDDEN_PATHS = [
         r"^data/",
         r"^reports/",
         r"^config/sources\.toml$",
+        r"^config/policy\.toml$",
         r"(^|/)\.env$",
         r"\.(trig|nq|nt|jsonld|csv|xlsx?|xlsm|pem|key|p12|pfx)$",
     )

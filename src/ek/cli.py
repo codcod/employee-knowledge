@@ -7,6 +7,7 @@ from pathlib import Path
 import typer
 from rdflib import URIRef
 from rich import print
+from rich.markup import escape
 from rich.table import Table
 
 from .adapters.base import SourceError
@@ -14,6 +15,14 @@ from .adapters.excel import ExcelAdapter
 from .config import DEFAULT_CONFIG, ConfigError, get_source, load_sources
 from .graph.store import KnowledgeStore
 from .ingest import IngestError, ingest
+from .policy import (
+    DEFAULT_POLICY,
+    Policy,
+    PolicyError,
+    in_force,
+    load_policy,
+    version_in_force,
+)
 from .reconcile import build_report
 from .review import ReviewError, label, review
 
@@ -22,6 +31,57 @@ app = typer.Typer(help="Employee Knowledge Graph")
 
 def store_path():
     return Path(os.getenv("EMPLOYEE_KNOWLEDGE_STORE", "./data/employee-knowledge.trig"))
+
+
+def _today():
+    return datetime.now(UTC).date()
+
+
+PolicyPath = tp.Annotated[
+    Path | None,
+    typer.Option(
+        "--policy",
+        help=f"Authority policy (default {DEFAULT_POLICY}; no policy if that is absent)",
+        show_default=False,
+    ),
+]
+ConfigPath = tp.Annotated[
+    Path, typer.Option("--config", help="Sources, to check the policy's source ids")
+]
+
+
+def _policy(path: Path | None, config: Path) -> Policy | None:
+    """The authority policy, or None when the default file is absent. Exits 1 when
+    it is invalid, or named with --policy and missing: never fall back to no policy
+    (ADR-0010). Policy text is escaped: it is not Rich markup."""
+    try:
+        if path is not None and not path.exists():
+            raise PolicyError(f"{path}: policy file not found")
+        path = path or DEFAULT_POLICY
+        policy = load_policy(path, set(load_sources(config))) if path.exists() else None
+    except (PolicyError, ConfigError) as exc:
+        print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(1) from exc
+    if policy is None:
+        print("No authority policy loaded; conflicts stay unresolved.")
+    elif not in_force(policy, _today()):
+        print(
+            f"[yellow]Policy {escape(policy.version)} is not in force until "
+            f"{policy.effective_from}; it is treated as no policy.[/yellow]"
+        )
+    return policy
+
+
+def _policy_line(data: dict, item: dict) -> str:
+    where = f"{item['employee_id']} {_short(item['property'])}"
+    if not (data["policy"] and data["policy"]["in_force"]):
+        return f"{where}: no authority policy: unresolved"
+    p = item["policy"]
+    line = f"{where}: policy {data['policy']['version']}: {p['outcome']}: "
+    line += p["rationale"]
+    if p["reviewer_roles"]:
+        line += f" (reviewer roles: {', '.join(p['reviewer_roles'])})"
+    return line
 
 
 @app.command("ingest-excel")
@@ -76,10 +136,10 @@ def _flags(fact: dict) -> str:
 
 
 @app.command("report")
-def report():
-    """Print discrepancies, values no longer observed, invalid values and
-    quarantined rows. Never picks a winner."""
-    data = build_report(KnowledgeStore(store_path()))
+def report(policy: PolicyPath = None, config: ConfigPath = DEFAULT_CONFIG):
+    """Print discrepancies with the policy's recommendation, values no longer
+    observed, invalid values and quarantined rows. Never picks a winner."""
+    data = build_report(KnowledgeStore(store_path()), _policy(policy, config))
     columns = ("Employee", "Property", "Value", "Source", "State", "Flags")
 
     def table(title, rows):
@@ -109,6 +169,9 @@ def report():
                 t.add_row("", "", "[red]conflicting values are both accepted[/red]")
             t.add_section()
         print(t)
+        # Outside the table, so a long rationale does not wrap into the cells.
+        for item in data["discrepancies"]:
+            print(escape(_policy_line(data, item)))
     else:
         print("[green]No conflicting values detected.[/green]")
     if data["not_observed"]:
@@ -129,13 +192,13 @@ def report_json(
     output: tp.Annotated[Path, typer.Option("--output")] = Path(
         "reports/discrepancies.json"
     ),
+    policy: PolicyPath = None,
+    config: ConfigPath = DEFAULT_CONFIG,
 ):
     """Write the full report, with every observation, as JSON."""
+    data = build_report(KnowledgeStore(store_path()), _policy(policy, config))
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        json.dumps(build_report(KnowledgeStore(store_path())), indent=2),
-        encoding="utf-8",
-    )
+    output.write_text(json.dumps(data, indent=2), encoding="utf-8")
     print(f"Wrote {output}")
 
 
@@ -149,7 +212,9 @@ Reviewer = tp.Annotated[str, typer.Option("--reviewer", help="Local label only")
 Reason = tp.Annotated[str, typer.Option("--reason")]
 
 
-def _review(assertion, action, reviewer, reason, superseded_by=None):
+def _review(assertion, action, reviewer, reason, policy, config, superseded_by=None):
+    # Load the policy first: an invalid one must leave no event behind.
+    version = version_in_force(_policy(policy, config), _today())
     store = KnowledgeStore(store_path())
     try:
         outcome = review(
@@ -159,6 +224,7 @@ def _review(assertion, action, reviewer, reason, superseded_by=None):
             reviewer=reviewer,
             reason=reason,
             superseded_by=URIRef(superseded_by) if superseded_by else None,
+            policy_version=version,
         )
     except ReviewError as exc:
         print(f"[red]{exc}[/red]")
@@ -166,25 +232,43 @@ def _review(assertion, action, reviewer, reason, superseded_by=None):
     store.save()
     print(
         f"[green]{label(outcome.from_state)} -> {label(outcome.to_state)}[/green]; "
-        f"event {outcome.event} recorded in the audit graph."
+        f"event {outcome.event} recorded in the audit graph (policy {escape(version)})."
     )
     for other in outcome.accepted_conflicts:
         print(f"[yellow]Also accepted with a different value: {other}[/yellow]")
 
 
 @review_app.command("accept")
-def review_accept(assertion: Assertion, reviewer: Reviewer, reason: Reason):
-    _review(assertion, "accept", reviewer, reason)
+def review_accept(
+    assertion: Assertion,
+    reviewer: Reviewer,
+    reason: Reason,
+    policy: PolicyPath = None,
+    config: ConfigPath = DEFAULT_CONFIG,
+):
+    _review(assertion, "accept", reviewer, reason, policy, config)
 
 
 @review_app.command("reject")
-def review_reject(assertion: Assertion, reviewer: Reviewer, reason: Reason):
-    _review(assertion, "reject", reviewer, reason)
+def review_reject(
+    assertion: Assertion,
+    reviewer: Reviewer,
+    reason: Reason,
+    policy: PolicyPath = None,
+    config: ConfigPath = DEFAULT_CONFIG,
+):
+    _review(assertion, "reject", reviewer, reason, policy, config)
 
 
 @review_app.command("request-evidence")
-def review_request_evidence(assertion: Assertion, reviewer: Reviewer, reason: Reason):
-    _review(assertion, "request-evidence", reviewer, reason)
+def review_request_evidence(
+    assertion: Assertion,
+    reviewer: Reviewer,
+    reason: Reason,
+    policy: PolicyPath = None,
+    config: ConfigPath = DEFAULT_CONFIG,
+):
+    _review(assertion, "request-evidence", reviewer, reason, policy, config)
 
 
 @review_app.command("supersede")
@@ -195,13 +279,21 @@ def review_supersede(
     by: tp.Annotated[
         str | None, typer.Option("--by", help="URI of the replacing assertion")
     ] = None,
+    policy: PolicyPath = None,
+    config: ConfigPath = DEFAULT_CONFIG,
 ):
-    _review(assertion, "supersede", reviewer, reason, by)
+    _review(assertion, "supersede", reviewer, reason, policy, config, by)
 
 
 @review_app.command("reopen")
-def review_reopen(assertion: Assertion, reviewer: Reviewer, reason: Reason):
-    _review(assertion, "reopen", reviewer, reason)
+def review_reopen(
+    assertion: Assertion,
+    reviewer: Reviewer,
+    reason: Reason,
+    policy: PolicyPath = None,
+    config: ConfigPath = DEFAULT_CONFIG,
+):
+    _review(assertion, "reopen", reviewer, reason, policy, config)
 
 
 @app.command("rebuild-projection")

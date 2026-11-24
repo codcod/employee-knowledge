@@ -66,18 +66,51 @@ leading zeros, and this cannot be detected.
 Use the same `--source-id` every time you ingest the same source. A different ID is
 treated as a different source.
 
+### Set up an authority policy
+
+The authority policy says which sources to believe for each property (see
+[trust-model.md](trust-model.md)). It is optional: without it, every conflict is
+reported as unresolved.
+
+`report`, `report-json` and the `review` commands read `config/policy.toml`, or the file
+named by `--policy`. A missing `config/policy.toml` means no policy; a file named with
+`--policy` must exist. The file is local and not committed. Start from
+`examples/policy.toml`, whose rows only illustrate the format. Putting a policy file in
+place is what approves it, so have the data owner approve its contents first.
+
+```toml
+version = "2026-1"             # recorded on every review event; change it on every edit
+effective_from = 2026-01-01    # in force from this date (UTC)
+
+[[properties]]
+property = "department"        # a field name from the source configuration
+authoritative = ["hr-export"]  # source ids; may be empty
+secondary = ["people-directory"]
+conflict_rule = "prefer-authoritative"   # or "manual"
+freshness_days = 365           # optional
+required = true                # optional, default false
+reviewer_roles = ["hr-reviewer"]         # optional; for people to read, not checked
+```
+
+Every source id must name a source in the source configuration. When a policy file
+exists, these commands also read `config/sources.toml`, or the file named by
+`--config`, to check the ids. Unknown keys, unknown properties, unknown sources and
+invalid values are errors. If the policy file is invalid, the command exits with status
+1 and changes nothing.
+
 ### Report discrepancies
 
 ```bash
-uv run employee-knowledge report
-uv run employee-knowledge report-json [--output reports/discrepancies.json]
+uv run employee-knowledge report [--policy <path>] [--config <path>]
+uv run employee-knowledge report-json [--output reports/discrepancies.json] [--policy <path>] [--config <path>]
 ```
 
 `report` prints up to four tables:
 
 - **Discrepancies:** every employee and property with more than one distinct value, each
   value with its source and review state. A row marks groups where conflicting values
-  are both accepted.
+  are both accepted. After the table, one line per discrepancy gives the authority
+  policy's recommendation, or "no authority policy: unresolved".
 - **Not observed in the latest run:** values that the most recent ingestion of their
   source no longer contained. Their review state is unchanged.
 - **Invalid values:** values that failed structural validation in any run.
@@ -86,7 +119,9 @@ uv run employee-knowledge report-json [--output reports/discrepancies.json]
 
 `report-json` writes the same report to a file, adding assertion and employee URIs and,
 for every value, each observation: run, source reference, exact source text, observation
-time (if supplied) and validation result. `reports/` is git-ignored.
+time (if supplied) and validation result. Its `policy` key gives the policy version and
+whether it is in force. Each discrepancy's `policy` gives the outcome, the rationale,
+the recommended assertion URIs and the reviewer roles. `reports/` is git-ignored.
 
 The report shows employee data. Treat it like the store.
 
@@ -100,8 +135,12 @@ uv run employee-knowledge review supersede <assertion-uri> [--by <assertion-uri>
 uv run employee-knowledge review reopen <assertion-uri> --reviewer <label> --reason "<why>"
 ```
 
+Every review command also takes `--policy <path>` and `--config <path>`, as described
+under the authority policy above.
+
 Take assertion URIs from `report-json`. Each command records one review event in the
-audit graph, with the reviewer label, reason, time and the state change, and moves the
+audit graph, with the reviewer label, reason, time, the state change and the version of
+the authority policy in force (`none` without one), and moves the
 assertion to the trusted graph (accepted) or the untrusted graph (any other state). See
 [trust-model.md](trust-model.md) for which actions are allowed from which state. A
 refused action records nothing and exits with status 1.
@@ -132,6 +171,7 @@ This walks the whole flow on the synthetic examples, using a throwaway store.
 
 ```bash
 mkdir -p config && cp examples/sources.toml config/sources.toml
+cp examples/policy.toml config/policy.toml   # optional: the example authority policy
 export EMPLOYEE_KNOWLEDGE_STORE=./data/demo.trig
 
 # Ingest two sources. The directory has one row without an employee ID; it is
@@ -140,7 +180,8 @@ uv run employee-knowledge ingest-excel examples/employees.xlsx --source-id hr-ex
 uv run employee-knowledge ingest-excel examples/employees-directory.xlsx --source-id people-directory
 
 # One discrepancy: E-1002's department is "People" in HR and "Product" in the
-# directory. E-1001's " Engineering " is not one: it matches after trimming.
+# directory. E-1001's " Engineering " is not one: it matches after trimming. With the
+# example policy, the report recommends the HR value; nothing is accepted yet.
 uv run employee-knowledge report
 uv run employee-knowledge report-json --output reports/demo.json
 
@@ -156,5 +197,5 @@ uv run employee-knowledge ingest-excel examples/employees.xlsx --source-id hr-ex
 uv run employee-knowledge rebuild-projection --check
 ```
 
-Both workbooks contain synthetic people only. Delete `data/demo.trig` and
-`reports/demo.json` afterwards.
+Both workbooks contain synthetic people only. Delete `data/demo.trig`,
+`reports/demo.json` and `config/policy.toml` afterwards.

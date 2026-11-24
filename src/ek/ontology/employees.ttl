@@ -266,7 +266,7 @@ ek:reviewReason a owl:DatatypeProperty ;
 
 ek:policyVersion a owl:DatatypeProperty ;
     rdfs:label "policy version" ;
-    rdfs:comment "Version of the authority policy applied; 'none' until a policy exists." ;
+    rdfs:comment "Version of the authority policy in force when the review was recorded; 'none' when there was none." ;
     rdfs:domain ek:ReviewEvent ;
     rdfs:range xsd:string .
 
