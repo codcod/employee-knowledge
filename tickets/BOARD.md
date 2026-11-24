@@ -20,10 +20,11 @@ Last updated: 2026-11-24
 
 ## IN REVIEW
 
-### employee-knowledge (0/1)
+### employee-knowledge (1/1)
 
 | id | title | depends-on |
 |---|---|---|
+| EK-004 | Define attribute-level source-authority policy model | [] |
 
 ## REWORK
 
@@ -31,7 +32,6 @@ Last updated: 2026-11-24
 
 | id | title | open findings |
 |---|---|---|
-| EK-004 | Define attribute-level source-authority policy model | review: 4 blocking (F1-F4); F8 fixed inline, F9 -> EK-015, F5-F7 noted |
 
 ## READY (impact order, per child)
 

@@ -362,6 +362,17 @@ Verdict: rework. F1–F4 are fixed on the branch, then a scoped re-review follow
 - [x] Impact sweep (step 8): EK-003 reads `in_force`, `required` and `freshness_days`, none of which changes. F4 changes only the CLI. EK-015 is filed for F9.
 - [ ] Approval and publish (step 9): pending the re-review.
 
+### Rework fix record — round 1 (commit 03e72a6)
+
+Branch tip before the fix: e95092d (the branch rebased onto `main` 737098b).
+
+- **F1:** `src/ek/cli.py` passes every interpolated policy string through `rich.markup.escape`: the `_policy` error and not-in-force lines, the `_policy_line` output, and the version in the `_review` confirmation. Tests: `test_bracketed_policy_text_is_printed_literally` (report, plus a review that exits 0 and records `v2 [/draft]`) and `test_bracketed_text_in_policy_error_is_printed_literally`.
+- **F2:** `src/ek/policy.py` `_row` checks `isinstance(name, str)` before the lookup. Test: `test_non_string_property_is_a_policy_error`, with an array and with an inline table.
+- **F3:** `load_policy` catches `UnicodeDecodeError` as "cannot be read". Test: `test_non_utf8_policy_is_a_policy_error`.
+- **F4:** `--policy` now defaults to `None`. A missing explicit path is a `PolicyError` ("policy file not found"), and exit 1 writes nothing. A missing default path is still no policy. The help text states the default. `docs/operating.md` says a file named with `--policy` must exist. Test: `test_explicit_missing_policy_exits_and_writes_nothing`, for `review`, `report` and `report-json`.
+- **F8 (fixed inline):** reworded the `recommend` row in `docs/trust-model.md`.
+- Checks: 8 of the new tests fail without the `src/` fix and pass with it. `uv run pytest` gives 186 passed; `ruff check` and `ruff format --check` are clean. The amended acceptance steps were re-run, and `--policy /nonexistent.toml` gives exit 1, "policy file not found".
+
 ## History
 
 - 2026-11-18 — created (TO DO). source: chat: migrated from roadmap Task-012 when Brine was set up
@@ -373,3 +384,4 @@ Verdict: rework. F1–F4 are fixed on the branch, then a scoped re-review follow
 - 2026-11-21 — IN DEVELOPMENT → IN REVIEW: acceptance green
 - 2026-11-24 — plan amended inline (review F4, owner decision): decision 11 now refuses a missing file named explicitly with --policy; the acceptance step was changed to match
 - 2026-11-24 — IN REVIEW → REWORK: review: 4 blocking (F1-F4); F8 fixed inline, F9 -> EK-015, F5-F7 noted
+- 2026-11-24 — REWORK → IN REVIEW: findings fixed
