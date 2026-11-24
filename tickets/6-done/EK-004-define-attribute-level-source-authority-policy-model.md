@@ -360,7 +360,7 @@ Verdict: rework. F1–F4 are fixed on the branch, then a scoped re-review follow
 - [x] Ticket moved to `5-rework/` (step 6)
 - [x] Governing documents reconciled (step 7): the branch carries the ADR-0010, architecture and roadmap edits. F4 amends decision 11 (plan amended inline).
 - [x] Impact sweep (step 8): EK-003 reads `in_force`, `required` and `freshness_days`, none of which changes. F4 changes only the CLI. EK-015 is filed for F9.
-- [ ] Approval and publish (step 9): pending the owner's approval.
+- [x] Approval and publish (step 9): the owner approved two tidied commits. `main` was pushed first, and the in-tree base check printed nothing. Then the branch was pushed and PR #3 opened. CI failed on a wrap-dependent test assertion; with the owner's approval, one test-only commit (5b8052e) was added, and CI passed.
 
 ### Rework fix record — round 1 (commit e5f1de9)
 
@@ -402,3 +402,4 @@ cost: estimated M, actual M
 
 Verdict: done.
 - 2026-11-24 — IN REVIEW → DONE: re-review clean: F1-F4 fixed; non-blocking F8/R2/R3 fixed inline, F9 -> EK-015, R1 folded into EK-015, F5-F7/R4 noted; publish pending owner approval
+- 2026-11-24 — published (owner-approved): tidied to 2 commits (2fc0eac feat, fb94c9f docs), pushed `main` first, PR https://github.com/codcod/employee-knowledge/pull/3. CI https://github.com/codcod/employee-knowledge/actions/runs/45413228170 failed (a Rich line-wrap made a test assertion fragile); owner-approved fix 5b8052e (pins COLUMNS in tests/conftest.py), CI https://github.com/codcod/employee-knowledge/actions/runs/45414948003 success. Merging is the owner's
