@@ -138,7 +138,7 @@ def _flags(fact: dict) -> str:
 @app.command("report")
 def report(policy: PolicyPath = None, config: ConfigPath = DEFAULT_CONFIG):
     """Print discrepancies with the policy's recommendation, values no longer
-    observed, invalid values and quarantined rows. Never picks a winner."""
+    observed and data-quality findings. Never picks a winner."""
     data = build_report(KnowledgeStore(store_path()), _policy(policy, config))
     columns = ("Employee", "Property", "Value", "Source", "State", "Flags")
 
@@ -176,15 +176,28 @@ def report(policy: PolicyPath = None, config: ConfigPath = DEFAULT_CONFIG):
         print("[green]No conflicting values detected.[/green]")
     if data["not_observed"]:
         print(table("Not observed in the latest run", map(row, data["not_observed"])))
-    if data["validation_violations"]:
-        print(table("Invalid values", map(row, data["validation_violations"])))
-    if data["quarantined"]:
-        t = Table(title="Quarantined rows (latest run of each source)")
-        for heading in ("Source", "Reference", "Reason"):
+    if data["findings"]:
+        # References and rationales only, no values. Source text is not Rich markup.
+        t = Table(title="Data-quality findings")
+        for heading in ("Category", "Employee", "Property", "Evidence", "Rationale"):
             t.add_column(heading)
-        for q in data["quarantined"]:
-            t.add_row(_short(q["source"]), q["source_reference"], q["reason"])
+        for f in data["findings"]:
+            refs = sorted(
+                {
+                    f"{_short(e['source'])}: {e['source_reference']}"
+                    for e in f["evidence"]
+                }
+            )
+            t.add_row(
+                f["category"],
+                escape(f.get("employee_id", "")),
+                _short(f.get("property", "")),
+                escape(", ".join(refs)),
+                escape(f["rationale"]),
+            )
         print(t)
+    if not (data["policy"] and data["policy"]["in_force"]):
+        print("Required and freshness checks are off: no authority policy is in force.")
 
 
 @app.command("report-json")

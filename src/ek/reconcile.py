@@ -3,6 +3,7 @@
 from collections import defaultdict
 from datetime import UTC, date, datetime
 
+from . import quality
 from .constants import EK
 from .graph.store import KnowledgeStore
 from .policy import Policy, evaluate, in_force
@@ -10,10 +11,15 @@ from .review import label
 
 
 def build_report(
-    store: KnowledgeStore, policy: Policy | None = None, today: date | None = None
+    store: KnowledgeStore,
+    policy: Policy | None = None,
+    today: date | None = None,
+    now: datetime | None = None,
 ) -> dict:
-    """``policy`` adds a recommendation to each discrepancy; it changes nothing."""
-    today = today or datetime.now(UTC).date()
+    """``policy`` adds a recommendation to each discrepancy and turns on the required
+    and freshness findings; it changes nothing."""
+    now = now or datetime.now(UTC)
+    today = today or now.date()
     observations = store.observations()
     latest = store.latest_runs()
     latest_seen = {src: store.observed(graph) for src, (_, graph) in latest.items()}
@@ -79,4 +85,5 @@ def build_report(
             for src, (run, graph) in sorted(latest.items())
             for q in store.quarantined(graph)
         ],
+        "findings": quality.findings(store, policy, now, today),
     }

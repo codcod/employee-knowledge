@@ -191,6 +191,20 @@ class KnowledgeStore:
             for assertion in graph.subjects(RDF.type, EK.FactAssertion):
                 yield graph_id, assertion, graph
 
+    def employee_ids(self) -> set[tuple[str, str]]:
+        """(issuer, employee ID) of every employee in the trusted or untrusted graph."""
+        ids = set()
+        for graph_id in (TRUSTED_GRAPH, UNTRUSTED_GRAPH):
+            graph = self.dataset.graph(graph_id)
+            for employee in graph.subjects(RDF.type, EK.Employee):
+                ids.add(
+                    (
+                        str(graph.value(employee, EK.issuer)),
+                        str(graph.value(employee, EK.employeeId)),
+                    )
+                )
+        return ids
+
     def _runs(self) -> list[tuple[URIRef, URIRef, Graph]]:
         """(source, run, run graph) for every completed run, oldest first.
         Incomplete runs are ignored (ADR-0003)."""

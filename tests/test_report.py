@@ -143,8 +143,10 @@ def test_cli_report_and_json(tmp_path, monkeypatch):
     store.save()
     table = CliRunner().invoke(app, ["report"])
     assert table.exit_code == 0, table.output
-    for text in ("Discrepancies", "Not observed", "Quarantined", "People!7"):
+    for text in ("Discrepancies", "Not observed", "Data-quality findings", "People!7"):
         assert text in table.output
+    for gone in ("Invalid values", "Quarantined rows"):
+        assert gone not in table.output
     out = tmp_path / "r.json"
     assert CliRunner().invoke(app, ["report-json", "--output", str(out)]).exit_code == 0
     data = json.loads(out.read_text())
@@ -154,5 +156,6 @@ def test_cli_report_and_json(tmp_path, monkeypatch):
         "not_observed",
         "validation_violations",
         "quarantined",
+        "findings",
     }
     assert data == build_report(KnowledgeStore(path))
