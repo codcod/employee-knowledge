@@ -20,11 +20,10 @@ Last updated: 2026-11-24
 
 ## IN REVIEW
 
-### employee-knowledge (1/1)
+### employee-knowledge (0/1)
 
 | id | title | depends-on |
 |---|---|---|
-| EK-003 | Add data-quality and freshness findings | [EK-004] |
 
 ## REWORK
 
@@ -32,6 +31,7 @@ Last updated: 2026-11-24
 
 | id | title | open findings |
 |---|---|---|
+| EK-003 | Add data-quality and freshness findings | review round 1: 4 blocking (F1–F4) |
 
 ## READY (impact order, per child)
 

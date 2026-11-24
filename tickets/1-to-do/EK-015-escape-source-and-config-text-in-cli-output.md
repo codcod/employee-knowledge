@@ -40,6 +40,12 @@ symbols, so a policy version of `v:warning:1` is still shown as `v⚠1` (EK-004 
 R1, folded here). The fix for this ticket must cover markup and emoji in every external
 string, the policy text included, for example by printing it as `rich.text.Text`.
 
+Folded from the EK-003 review (2026-11-24): `escape()` does not remove terminal control
+characters, so a workbook or sheet name holding ESC/OSC sequences reaches the terminal
+(F12); strip or replace C0/C1 control characters other than tab in external text. The
+new `report` "Data-quality findings" table escapes markup but not emoji (F13), and the
+other report tables escape nothing (F11); include all of them in the regression test.
+
 Likely approach, to be confirmed at refinement: wrap every interpolated external string in
 `rich.markup.escape()`, or print it with `markup=False`, and add a regression test with
 bracketed synthetic values in every printing command.
@@ -56,3 +62,4 @@ bracketed synthetic values in every printing command.
 
 - 2026-11-24 — created (TO DO). source: review: EK-004 review finding F9 (pre-existing unescaped Rich markup in CLI output; owner chose a new ticket)
 - 2026-11-24 — folded EK-004 re-review R1 (emoji shortcodes in policy text are still rendered)
+- 2026-11-24 — folded EK-003 review F11–F13 (unescaped report tables, terminal control characters, emoji in the findings table)

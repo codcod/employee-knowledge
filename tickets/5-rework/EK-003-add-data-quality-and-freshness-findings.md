@@ -242,7 +242,37 @@ uv run employee-knowledge report --config examples/sources.toml --policy example
 
 ## Review
 
-<!-- empty until IN REVIEW -->
+### Review — round 1 (2026-11-24)
+
+| id | severity | class | disposition | description | evidence | suggestion |
+|---|---|---|---|---|---|---|
+| F1 | blocking | correctness | — | `build_report(today=…)` without `now` checks the policy for the header and discrepancies on `today`, but for findings on `now.date()`, so the two can disagree | repro: `build_report(store, policy(effective=2026-01-01, required=True), today=date(2025,12,31))` → `policy.in_force` False, yet findings hold `missing-required` (`src/ek/reconcile.py:22`) | use one date: `today` given and `now` not → findings use `today` too (e.g. pass `today` into `quality.findings`) |
+| F2 | blocking | correctness | — | A newer `ek:observedAt` without a timezone is ignored, so an older zoned time makes the value `stale` although it was observed yesterday | repro: run 1 `2020-01-01T00:00:00+00:00`, run 2 `2026-05-31T00:00:00`, window 30, now 2026-06-01 → `['stale']` (`src/ek/quality.py` freshness branch); EK-003 decision 4 (owner, 2026-11-24): UTC never assumed | any `ek:observedAt` present but unusable → `freshness-unknown` (UNKNOWN_TZ), never `stale` |
+| F3 | blocking | correctness | — | A naive `now` makes `build_report`/`findings` raise `TypeError` as soon as a property has a freshness window | repro: `findings(store, policy(freshness=30), datetime(2026,6,1))` → `TypeError: can't compare offset-naive and offset-aware datetimes` | reject a naive `now` with a clear `ValueError` at the `findings` boundary |
+| F4 | blocking | correctness | — | The findings table drops the source: the replaced "Quarantined rows" table had a Source column, so rows from two sources with the same workbook name cannot be told apart | `src/ek/cli.py` findings table prints only `source_reference`; old code printed `_short(q["source"])` | show the short source id with each evidence reference |
+| F5 | non-blocking | design | noted | An assertion with no observation in a completed run gives empty evidence, and the sort on `evidence[0]` raises `IndexError` | repro on a hand-built store only; ingest writes the run and its assertions together (delegated reviewer ruled it unreachable) | none now |
+| F6 | non-blocking | design | noted | The table no longer shows validation messages for invalid values | intentional: messages may hold values (`cli.py` IngestError comment; decision 7); `report-json` keeps them per observation | none |
+| F7 | non-blocking | spec-unclear | noted | Stale, freshness-unknown and broken-manager findings also cover assertions no latest run still contains, so superseded values keep their findings | decision 4 ("every assertion, whatever its trust or observation state") | data owner to confirm when the §13 freshness question (EK-014) is answered |
+| F8 | non-blocking | correctness | noted | A `freshness_days` large enough to overflow `timedelta`/`datetime` passes policy validation and crashes the report | repro (delegated): `freshness_days=1_000_000` with a zoned `observed_at` → `OverflowError`; no adapter supplies `observed_at` today | bound `freshness_days` in `policy._row` when a source first supplies observation times |
+| F9 | non-blocking | test-gap | fixed inline | No test that the "checks are off" note is absent when a policy is in force | `tests/test_quality.py::test_cli_shows_findings_table_and_json_key` covers only no policy | add an in-force CLI assertion (in the rework commits) |
+| F10 | non-blocking | stale-xref | fixed inline | The new §4.6 paragraph omits freshness-unknown from the categories | `development/architecture.md` §4.6 | add it (in the rework commits) |
+| F11 | non-blocking | correctness | folded | The existing report tables print values, IDs and references without `escape` (pre-existing) | code-review tool, `cli.py` `row()` | EK-015 already owns it |
+| F12 | non-blocking | correctness | folded | `escape()` leaves terminal control characters (ESC/OSC) in source text, so a workbook or sheet name can inject terminal sequences (pre-existing, whole CLI) | repro (delegated): `escape("wb\x1b]0;pwned\x07…")` printed with `force_terminal=True` keeps `\x1b]0;pwned` | EK-015: item added for C0/C1 control characters |
+| F13 | non-blocking | correctness | folded | Emoji shortcodes survive `escape()` in the findings cells | repro (delegated): `escape('Team:fire:.xlsx#S!2')` renders 🔥 | EK-015 already covers emoji; findings table added to its regression list |
+
+Dispositions: 4 blocking (F1–F4, → rework); non-blocking: 4 noted (F5–F8), 2 fixed inline (F9, F10), 3 folded into EK-015 (F11–F13), 0 new tickets.
+cost: estimated M, actual M
+
+Checklist:
+- [x] Reviewer independence (step 0): delegated — the orchestrator wrote the branch; a fresh sub-agent ran steps 1–4a. No delegated finding discarded.
+- [x] In-tree stale-branch check (step 0a): `pickle doctor` 0 errors, 0 warnings on the branch.
+- [x] Implementation audit (steps 1, 2): delegated reviewer re-ran `uv run pytest` (202 passed), both ruff checks and the manual synthetic acceptance; tasks 1–3 and decisions 1–7 met.
+- [x] Correctness hunt (step 3): host tool path — `/code-review medium` on `main...feat/EK-003-quality-findings`, run by the orchestrator; 8 findings, 0 discarded (4 important reproduced by orchestrator script; 1 pre-existing). Angle 7 ran separately (delegated reviewer, no sub-agents): 2 findings, plus F8 incidentally.
+- [x] Consistency audit (step 4): delegated; F10.
+- [x] Documentation audit (step 4a): delegated; coverage complete, no `docs/` → `development/` links, no docs build configured.
+- [ ] Docs-readability pass (step 4b): conscious skip — optional, not run this round.
+- [x] Findings recorded (step 5).
+- [x] Ticket moved to `5-rework/` (step 6a).
 
 ## History
 
@@ -255,3 +285,4 @@ uv run employee-knowledge report --config examples/sources.toml --policy example
 - 2026-11-24 — plan amended inline: acceptance step drops `--policy /nonexistent.toml` (EK-004 makes a missing named file exit 1); an `ek:observedAt` without a timezone gives `freshness-unknown` (owner decision); §13 references corrected (Q2 related, Q5 dropped; freshness question folded into EK-014); `today` defaults to `now.date()`; findings-table cells escaped; `report` docstring updated
 - 2026-11-24 — READY → IN DEVELOPMENT: picked up
 - 2026-11-24 — IN DEVELOPMENT → IN REVIEW: acceptance green (202 tests, ruff clean; manual synthetic run matches plan)
+- 2026-11-24 — IN REVIEW → REWORK: review round 1: 4 blocking (F1–F4)
