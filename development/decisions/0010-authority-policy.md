@@ -1,7 +1,7 @@
 # ADR-0010: Source-authority policy
 
-- **Status:** Proposed (2026-11-21). It becomes Accepted when the project owner approves
-  EK-004 at review.
+- **Status:** Accepted (2026-11-24). The project owner approved EK-004 and merged it
+  (PR #3). First proposed 2026-11-21.
 - **Related:** ADR-0002, ADR-0007, ADR-0009
 
 ## Context

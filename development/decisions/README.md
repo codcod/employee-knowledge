@@ -23,7 +23,7 @@ Status values:
 | [0007](0007-source-config.md) | Accepted | Source configuration in TOML via `tomllib`; unknown keys are an error. |
 | [0008](0008-value-normalisation.md) | Accepted | Trim surrounding whitespace; lowercase `work_email`; compare exactly. |
 | [0009](0009-ontology-namespace.md) | Accepted | The ontology namespace is `https://w3id.org/employee-knowledge/ontology#`; instance URNs are unchanged. |
-| [0010](0010-authority-policy.md) | Proposed | A versioned TOML policy per property; it recommends, never decides, and never waives review. Review events record the version in force. |
+| [0010](0010-authority-policy.md) | Accepted | A versioned TOML policy per property; it recommends, never decides, and never waives review. Review events record the version in force. |
 
 ### Superseded one-line entries
 
