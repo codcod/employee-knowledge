@@ -110,9 +110,9 @@ not build on an unmerged EK-004 branch. Start from a clean tree, and check that
    - `freshness-unknown`: for the same properties, an assertion that has no
      `ek:observedAt` on any observation. Evidence: its observations. The rationale says
      ingestion time is not used. An `ek:observedAt` without a timezone is not used
-     either (owner decision 2026-11-24): if no observation has a zoned time, the finding
-     is `freshness-unknown` with a rationale saying the time has no timezone. UTC is
-     never assumed.
+     either (owner decision 2026-11-24): if any observation has a time without a
+     timezone, or one that cannot be read, the finding is `freshness-unknown` with a
+     rationale saying so, never `stale` (review F2). UTC is never assumed.
 5. **No policy, or a policy not yet in force, means only the first three categories
    run.** The report says the required and freshness checks are off because no authority
    policy is in force.
@@ -274,7 +274,7 @@ Checklist:
 - [x] Findings recorded (step 5).
 - [x] Ticket moved to `5-rework/` (step 6a).
 
-### Rework fix record — round 1 (commit cc797d3)
+### Rework fix record — round 1 (commit cc797d3; after the rebase onto `main`, eea2501 — same code, review R5)
 
 - F1: `quality.findings` takes `today` (default `now.date()`) for the in-force check, and `build_report` passes its own `today`, so the header, recommendations and findings use one date. Test `test_report_uses_one_date_for_policy_and_findings`.
 - F2: any `ek:observedAt` present but unusable (no timezone, unreadable) gives `freshness-unknown` (UNKNOWN_TZ, evidence = those observations), never `stale`. Test `test_newer_time_without_timezone_is_never_stale_on_an_older_one`; `docs/trust-model.md` says so.
@@ -283,6 +283,34 @@ Checklist:
 - F9 (fixed inline): the CLI test also runs `report` with an in-force policy and asserts the "checks are off" note is absent.
 - F10 (fixed inline): §4.6 lists freshness-unknown.
 - Checks: `uv run pytest` 205 passed; `ruff check` and `ruff format --check` clean; manual synthetic acceptance matches the plan.
+
+### Review — round 2, scoped re-review (2026-11-24)
+
+F1–F4 verified closed against the fix diff; each regression test fails on the round-1 code. F9 and F10 confirmed.
+
+| id | severity | class | disposition | description | evidence | suggestion |
+|---|---|---|---|---|---|---|
+| R1 | non-blocking | correctness | noted | Findings that tie on the decision-6 sort key (same category, employee, property and first reference, different sources) come out in an order that depends on `PYTHONHASHSEED` after a store reload | repro (delegated): five sources, same ref `wb.xlsx#S!2`, freshness 30, save/reload → seeds 1/2/3 give three orders | add the source (or assertion URI) as a last sort-key element; extends decision 6, so the owner decides |
+| R2 | non-blocking | docs-gap | fixed inline | `docs/trust-model.md` freshness-unknown row and paragraph described less than the F2 fix ships (one unusable time is enough; unreadable times count too) | `docs/trust-model.md` category table vs paragraph | reworded (branch commit `docs: describe unusable observation times precisely (EK-003)`) |
+| R3 | non-blocking | stale-xref | fixed inline | Decision 4's freshness-unknown prose described the pre-F2 rule | this ticket, decision 4 | amended (History line) |
+| R4 | non-blocking | spec-unclear | noted | A later run with no time does not stop an older zoned time from giving `stale` (only unusable times do) | repro (delegated): run 1 `2020-01-01T00:00:00+00:00`, run 2 no time, window 30 → `stale` | data owner decides with F7 and EK-014's freshness question |
+| R5 | non-blocking | stale-xref | fixed inline | The round-1 fix record named the pre-rebase SHA | `git branch --contains cc797d3` empty; `git diff cc797d3 eea2501` touches `tickets/` only | heading names both |
+
+Dispositions: 0 blocking; 2 noted (R1, R4), 3 fixed inline (R2, R3, R5), 0 folded, 0 new tickets. Verdict: done.
+cost: estimated M, actual M
+
+Checklist:
+- [x] Reviewer independence (step 0): delegated — fresh sub-agent; one candidate discarded by it (a tzinfo whose `utcoffset()` is None: no caller can build one). No delegated finding discarded by the orchestrator.
+- [x] In-tree stale-branch check (step 0a): `pickle doctor` 0/0.
+- [x] Implementation audit (steps 1, 2): scoped to F1–F4, F9, F10 and the fix diff; `uv run pytest` 205 passed, ruff clean, manual synthetic acceptance matches.
+- [x] Correctness hunt (step 3): one-pass angle hunt (all 8 angles, angle 7 included) by the delegated reviewer, no sub-agents; R1 and R4 reproduced.
+- [x] Consistency audit (step 4): R2, R3, R5.
+- [x] Documentation audit (step 4a): coverage complete; no `docs/` → `development/` links; no docs build.
+- [ ] Docs-readability pass (step 4b): conscious skip — optional.
+- [x] Findings recorded (step 5).
+- [x] Ticket moved to `6-done/` (step 6b).
+- [x] Other references (step 7): roadmap Task-010 progress line and architecture §4.6/§10/§13 Q15 updated on the branch; EK-015 and EK-014 carry their folded items.
+- [x] Impact sweep (step 8): no ticket lists EK-003 in `depends-on:`. EK-005 (soft coupling) can later carry findings in query results; its plan does not assume anything EK-003 changed. EK-014 already carries the freshness question.
 
 ## History
 
@@ -297,3 +325,5 @@ Checklist:
 - 2026-11-24 — IN DEVELOPMENT → IN REVIEW: acceptance green (202 tests, ruff clean; manual synthetic run matches plan)
 - 2026-11-24 — IN REVIEW → REWORK: review round 1: 4 blocking (F1–F4)
 - 2026-11-24 — REWORK → IN REVIEW: findings fixed (round 1)
+- 2026-11-24 — plan amended inline: decision 4's freshness-unknown text now matches review F2 (any unusable time gives freshness-unknown) (review R3)
+- 2026-11-24 — IN REVIEW → DONE: review round 2 clean: 0 blocking; round 1 F1–F4 fixed; dispositions 6 noted, 5 fixed inline, 3 folded (EK-015), 0 new tickets
