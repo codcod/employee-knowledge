@@ -31,7 +31,8 @@ employee of the same issuer and reports references that do not resolve.
 
 Refined 2026-11-21 (owner decisions):
 - **Mechanism now, rules later.** Which properties are required and how fresh they must
-  be are business rules (§13 Q2 and Q5, recorded by EK-014). This ticket reads them from
+  be are business rules (related to §13 Q2; no §13 question asks about freshness yet, and
+  EK-014 adds one). This ticket reads them from
   the EK-004 policy, which ships with no real rows. Without a policy in force, only the
   three rule-free categories appear.
 - **Hard dependency on EK-004** (owner sign-off 2026-11-21): `required` and
@@ -108,7 +109,10 @@ not build on an unmerged EK-004 branch. Start from a clean tree, and check that
      `ek:observedAt` is older than `now - freshness_days`. Evidence: that observation.
    - `freshness-unknown`: for the same properties, an assertion that has no
      `ek:observedAt` on any observation. Evidence: its observations. The rationale says
-     ingestion time is not used.
+     ingestion time is not used. An `ek:observedAt` without a timezone is not used
+     either (owner decision 2026-11-24): if no observation has a zoned time, the finding
+     is `freshness-unknown` with a rationale saying the time has no timezone. UTC is
+     never assumed.
 5. **No policy, or a policy not yet in force, means only the first three categories
    run.** The report says the required and freshness checks are off because no authority
    policy is in force.
@@ -118,7 +122,9 @@ not build on an unmerged EK-004 branch. Start from a clean tree, and check that
 7. **In the Rich report, one "Data-quality findings" table replaces the "Invalid values"
    and "Quarantined rows" tables.** Its columns are Category, Employee, Property,
    Evidence (source references) and Rationale. It prints no values, so findings add no
-   employee data to the screen beyond what the discrepancy table already shows.
+   employee data to the screen beyond what the discrepancy table already shows. Its
+   cells are `escape()`d: references and reasons are source text, not Rich markup
+   (the rest of the CLI is EK-015's).
 
 ### Tasks
 
@@ -136,9 +142,11 @@ not build on an unmerged EK-004 branch. Start from a clean tree, and check that
 #### Task 2 — Report wiring
 
 - `src/ek/reconcile.py`: `build_report(store, policy=None, today=None, now=None)` adds
-  `"findings": quality.findings(store, policy, now or datetime.now(UTC))`.
+  `"findings": quality.findings(store, policy, now)`, where `now` defaults to
+  `datetime.now(UTC)` and `today` defaults to `now.date()`, so the two agree.
 - `src/ek/cli.py` `report`: the table from decision 7 replaces the two tables, with a
-  note line when the policy checks are off. `report-json` needs no CLI change beyond
+  note line when the policy checks are off (not repeating `_policy`'s own "No authority
+  policy loaded" line). Update the `report` docstring. `report-json` needs no CLI change beyond
   passing the policy, which EK-004 already does.
 
 #### Task 3 — Tests (`tests/test_quality.py`, plus `tests/test_report.py` updates)
@@ -164,6 +172,7 @@ where freshness is tested. Cover:
   - `observed_at` exactly at the window boundary: not stale.
   - One second older: stale.
   - No `observed_at`: `freshness-unknown`.
+  - `observed_at` without a timezone: `freshness-unknown`, not stale.
   - A property with no window: neither finding.
 - **Invariants (regression):** findings leave `len(store.dataset)` unchanged, change no
   `store.state(...)`, and leave `check_projection()` empty; every finding has a
@@ -185,7 +194,7 @@ uv run ruff check . && uv run ruff format --check .
 export EMPLOYEE_KNOWLEDGE_STORE="$(mktemp -d)/store.trig"
 uv run employee-knowledge ingest-excel examples/employees.xlsx --source-id hr-export --config examples/sources.toml
 uv run employee-knowledge ingest-excel examples/employees-directory.xlsx --source-id people-directory --config examples/sources.toml
-uv run employee-knowledge report --config examples/sources.toml --policy /nonexistent.toml
+uv run employee-knowledge report --config examples/sources.toml   # no config/policy.toml: no policy
 #   broken-manager-reference for E-1002 (manager E-1004 is not an employee)
 #   unresolved-identity for employees-directory.xlsx#Directory!5 (missing employee ID)
 #   note: required/freshness checks off (no authority policy)
@@ -242,3 +251,6 @@ uv run employee-knowledge report --config examples/sources.toml --policy example
 - 2026-11-21 — refined. Owner decisions: mechanism now, rules from the EK-004 policy (new hard depends-on EK-004, owner sign-off); staleness from ek:observedAt only, otherwise freshness-unknown; missing-required per employee across all sources' latest runs. Re-graded complexity medium-high → medium, cost M-L → M. Plan written
 - 2026-11-21 — TO DO → READY: plan complete
 - 2026-11-21 — folded EK-004 applicability-gate G9: call `in_force(policy, now.date())`; the report key-set test gains `findings`
+- 2026-11-24 — applicability gate (fresh sub-agent): 0 blocking, 5 non-blocking, routing approved by the owner
+- 2026-11-24 — plan amended inline: acceptance step drops `--policy /nonexistent.toml` (EK-004 makes a missing named file exit 1); an `ek:observedAt` without a timezone gives `freshness-unknown` (owner decision); §13 references corrected (Q2 related, Q5 dropped; freshness question folded into EK-014); `today` defaults to `now.date()`; findings-table cells escaped; `report` docstring updated
+- 2026-11-24 — READY → IN DEVELOPMENT: picked up
