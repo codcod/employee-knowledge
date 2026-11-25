@@ -13,10 +13,11 @@ Last updated: 2026-11-25
 
 ## IN DEVELOPMENT
 
-### employee-knowledge (0/1)
+### employee-knowledge (1/1)
 
 | id | title | depends-on |
 |---|---|---|
+| EK-015 | Escape source and config text in CLI output | [] |
 
 ## IN REVIEW
 
@@ -38,7 +39,6 @@ Last updated: 2026-11-25
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
-| EK-015 | Escape source and config text in CLI output | medium | low | S | [] |  |
 
 ## TO DO (impact order, per child)
 

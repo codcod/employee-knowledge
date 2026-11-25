@@ -145,18 +145,23 @@ reference. For each value, assert:
   line): the same checks.
 - `ingest` with an unknown `--source-id` set to the hostile value, so that the
   `ConfigError` echoes it: exit 1, and the value is shown as written.
-- `ingest-excel` on a synthetic workbook whose sheet is named `[bold]S` and whose row is
-  quarantined: the quarantine line shows `[bold]S` as written.
-- A policy whose `version = "v:warning:1"` with a rationale of `[/x]`: the `report`
-  policy line shows both as written, and the `_policy` not-in-force line shows the
-  version as written.
+- `ingest-excel` on a synthetic workbook named `[bold]hr.xlsx` (openpyxl rejects `[`,
+  `]` and `:` in sheet titles) whose sheet is titled `a\x9b2J` and whose row is
+  quarantined: the quarantine line shows `[bold]hr.xlsx#a\x9b2J!…` as written, with the
+  C1 character escaped.
+- A policy whose `version = "v:warning:1"` naming a source id `[/x]` (from
+  `sources.toml`) as authoritative, so `[/x]` reaches the rationale built by
+  `evaluate()` (a policy has no rationale field): the `report` policy line shows both as
+  written. A second policy with a future `effective_from`: the `_policy` not-in-force
+  line shows the version as written.
 - `review accept` with a hostile assertion argument: exit 1, and the "Unknown assertion"
   message is shown as written.
 - `_clean` unit test: tab is kept; `\x00`, `\x1b`, `\x7f`, `\x9b` and `\n` are escaped;
   U+202E and ZWJ are unchanged.
 - JSON (decision 4): the existing `report-json` and `query --json` tests stay green with
-  no edits. Add one case showing that `query --json` returns `Eng\x1b[31mRED` with the
-  real ESC character, the original text, not the escaped form.
+  no edits. Add one case showing that `json.loads` of the `query --json` output gives
+  back `Eng` + ESC + `[31mRED` (the original text, not the escaped form), and that the
+  raw output has no ESC byte.
 
 Existing tests that assert on CLI output must stay green without being weakened.
 
@@ -221,3 +226,5 @@ before, apart from the fix.
 - 2026-11-25 — impact note from EK-012 gate (G2): the new generic `ingest` command reuses `ingest-excel`'s unescaped error, finding and quarantine output, and that text can now come from third-party adapter code
 - 2026-11-25 — refined. Re-verified on main 7a80234 (report MarkupError on `[/x]`, `[bold]` styled, emoji rendered, ESC passes in report and query). Owner decisions: Cc except tab shown as visible escapes; Cf left alone (bidi a known limitation). Grades unchanged (medium / low / S). Plan written
 - 2026-11-25 — TO DO → READY: plan complete
+- 2026-11-25 — plan amended inline: applicability gate G1–G3 (non-blocking, owner-approved). G1: openpyxl rejects `[`/`:` in sheet titles, so the markup goes in the workbook file name and the sheet title carries a C1 character. G2: a policy has no rationale field, so `[/x]` enters the rationale through an authoritative source id, and a second future-dated policy covers the not-in-force line. G3: the JSON check is on `json.loads` output plus no raw ESC byte
+- 2026-11-25 — READY → IN DEVELOPMENT: picked up; gate G1–G3 non-blocking, plan amended inline
