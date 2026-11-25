@@ -9,10 +9,12 @@ from rdflib import URIRef
 from rich import print
 from rich.markup import escape
 from rich.table import Table
+from rich.text import Text
 
 from .adapters.base import SourceError
 from .adapters.excel import ExcelAdapter
 from .config import DEFAULT_CONFIG, ConfigError, get_source, load_sources
+from .constants import TRUSTED_GRAPH, UNTRUSTED_GRAPH
 from .graph.store import KnowledgeStore
 from .ingest import IngestError, ingest
 from .policy import (
@@ -23,6 +25,7 @@ from .policy import (
     load_policy,
     version_in_force,
 )
+from .query import QueryError, Scope, query_facts
 from .reconcile import build_report
 from .review import ReviewError, label, review
 
@@ -213,6 +216,84 @@ def report_json(
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(data, indent=2), encoding="utf-8")
     print(f"Wrote {output}")
+
+
+@app.command("query")
+def query(
+    scope: tp.Annotated[
+        Scope,
+        typer.Option(
+            "--scope", help="trusted: accepted only. all: every assertion, with state"
+        ),
+    ],
+    employee_id: tp.Annotated[str | None, typer.Option("--employee-id")] = None,
+    issuer: tp.Annotated[str | None, typer.Option("--issuer")] = None,
+    property: tp.Annotated[
+        str | None, typer.Option("--property", help="Field name, e.g. department")
+    ] = None,
+    as_json: tp.Annotated[bool, typer.Option("--json", help="Print JSON")] = False,
+):
+    """Look up facts by employee and/or property. Read-only; never picks a value."""
+    try:
+        results = query_facts(
+            KnowledgeStore(store_path()),
+            scope=scope,
+            employee_id=employee_id,
+            issuer=issuer,
+            property=property,
+        )
+    except QueryError as exc:
+        print(Text(str(exc), style="red"))
+        raise typer.Exit(1) from exc
+    if as_json:
+        typer.echo(json.dumps(results, indent=2))
+        return
+    if scope is Scope.TRUSTED:
+        title = (
+            f"Scope trusted: facts from {TRUSTED_GRAPH}; unaccepted values counted, "
+            "not shown"
+        )
+    else:
+        title = f"Scope all: facts from {TRUSTED_GRAPH} and {UNTRUSTED_GRAPH}"
+    t = Table(title=title)
+    for heading in ("Employee", "Issuer", "Property", "Value", "Source", "State"):
+        t.add_column(heading)
+    t.add_column("References")
+    # Text cells: source values are not Rich markup.
+    for item in results:
+        for f in item["facts"]:
+            refs = sorted({o["source_reference"] for o in f["observations"]})
+            t.add_row(
+                *map(
+                    Text,
+                    (
+                        f["employee_id"],
+                        f["issuer"],
+                        _short(f["property"]),
+                        f["value"],
+                        _short(f["source"]),
+                        f["status"],
+                        ", ".join(refs),
+                    ),
+                )
+            )
+        if item["conflict"]:
+            t.add_row("", "", "", Text("conflicting values; none is picked", "red"))
+        if item["facts"]:
+            t.add_section()
+    print(t)
+    for item in results:
+        where = f"{item['employee_id']} ({item['issuer']}) {_short(item['property'])}"
+        n = item.get("untrusted_candidates", 0)
+        if not item["facts"]:
+            print(Text(f"{where}: no trusted value.", "yellow"))
+        if n:
+            print(
+                Text(
+                    f"{where}: {n} unaccepted value(s) not shown; use --scope all",
+                    "yellow",
+                )
+            )
 
 
 review_app = typer.Typer(

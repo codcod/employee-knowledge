@@ -137,6 +137,8 @@ narrow and respect the board's WIP limits.
 - Include provenance in results.
 - Acceptance: callers must explicitly choose trust scope; tests prove untrusted values
   do not leak into trusted-only results.
+- Progress: a lookup by employee and/or property with a mandatory `trusted` or `all`
+  scope (EK-005). Named business-question templates wait for §13 Q10 (EK-014).
 
 **Task-014: Add constrained natural-language-to-SPARQL design/prototype**
 - Ticket: EK-006.

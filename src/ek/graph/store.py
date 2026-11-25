@@ -163,6 +163,22 @@ class KnowledgeStore:
             return EK.Candidate
         return self.dataset.graph(AUDIT_GRAPH).value(events[-1], EK.toState)
 
+    def latest_review(self, assertion: URIRef) -> dict | None:
+        """The latest review event about ``assertion``, or None when there is none."""
+        events = self.events(assertion)
+        if not events:
+            return None
+        e = events[-1]
+        g = self.event(e)
+        return {
+            "event": str(e),
+            "reviewer": str(g.value(e, EK.reviewer)),
+            "action": _local(g.value(e, EK.reviewAction)),
+            "reason": str(g.value(e, EK.reviewReason)),
+            "policy_version": str(g.value(e, EK.policyVersion)),
+            "at": str(g.value(e, PROV.endedAtTime)),
+        }
+
     def next_sequence(self) -> int:
         audit = self.dataset.graph(AUDIT_GRAPH)
         return 1 + max(

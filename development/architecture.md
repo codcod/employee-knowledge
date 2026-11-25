@@ -304,6 +304,11 @@ Provide a read-only query service over the graph. For the prototype, the CLI and
 internal Python API are sufficient. Later, expose supported business questions through
 named query templates or a constrained API.
 
+The prototype has a generic lookup by employee and/or property (`ek.query`,
+`employee-knowledge query`) with a mandatory trust scope: `trusted` (accepted assertions
+only; unaccepted values are counted, never shown) or `all` (every assertion with its
+review state). Named business-question templates wait for §13 Q10.
+
 Natural-language-to-SPARQL is a planned capability, not a prerequisite for the first
 Excel slice. When added:
 - generate queries only against the published ontology/schema;
@@ -503,6 +508,7 @@ employee-knowledge/
 │   ├── ingest.py
 │   ├── policy.py              # source-authority policy (ADR-0010)
 │   ├── quality.py             # data-quality findings, computed per report
+│   ├── query.py               # trust-scoped fact lookup (§4.8)
 │   ├── reconcile.py
 │   ├── review.py              # review actions and state machine (ADR-0002)
 │   ├── validation.py          # SHACL validator (ADR-0006)

@@ -10,6 +10,36 @@ from .policy import Policy, evaluate, in_force
 from .review import label
 
 
+def assertion_facts(store: KnowledgeStore) -> list[dict]:
+    """Every assertion in the trusted or untrusted graph, with its provenance and
+    derived state. Shared by the report and the query (``ek.query``)."""
+    observations = store.observations()
+    latest_seen = {
+        src: store.observed(graph) for src, (_, graph) in store.latest_runs().items()
+    }
+    found = []
+    for graph_id, assertion, graph in store.assertions():
+        employee = graph.value(assertion, EK.aboutEmployee)
+        source = graph.value(assertion, EK.fromSource)
+        found.append(
+            {
+                "assertion": str(assertion),
+                "employee": str(employee),
+                "employee_id": str(graph.value(employee, EK.employeeId)),
+                "issuer": str(graph.value(employee, EK.issuer)),
+                "property": str(graph.value(assertion, EK.predicate)),
+                "value": str(graph.value(assertion, EK.value)),
+                "source": str(source),
+                "graph": str(graph_id),
+                "status": label(store.state(assertion)),
+                # Absence is computed here, never stored, and never changes state.
+                "observed_in_latest_run": assertion in latest_seen.get(source, set()),
+                "observations": observations.get(assertion, []),
+            }
+        )
+    return found
+
+
 def build_report(
     store: KnowledgeStore,
     policy: Policy | None = None,
@@ -20,30 +50,10 @@ def build_report(
     and freshness findings; it changes nothing."""
     now = now or datetime.now(UTC)
     today = today or now.date()
-    observations = store.observations()
     latest = store.latest_runs()
-    latest_seen = {src: store.observed(graph) for src, (_, graph) in latest.items()}
-
-    facts, grouped = [], defaultdict(list)
-    for graph_id, assertion, graph in store.assertions():
-        employee = graph.value(assertion, EK.aboutEmployee)
-        source = graph.value(assertion, EK.fromSource)
-        fact = {
-            "assertion": str(assertion),
-            "employee": str(employee),
-            "employee_id": str(graph.value(employee, EK.employeeId)),
-            "issuer": str(graph.value(employee, EK.issuer)),
-            "property": str(graph.value(assertion, EK.predicate)),
-            "value": str(graph.value(assertion, EK.value)),
-            "source": str(source),
-            "graph": str(graph_id),
-            "status": label(store.state(assertion)),
-            # Absence is computed here, never stored, and never changes state.
-            "observed_in_latest_run": assertion in latest_seen.get(source, set()),
-            "observations": observations.get(assertion, []),
-        }
-        facts.append(fact)
-        grouped[(fact["employee"], fact["property"])].append(fact)
+    all_facts, grouped = assertion_facts(store), defaultdict(list)
+    for f in all_facts:
+        grouped[(f["employee"], f["property"])].append(f)
 
     discrepancies = []
     for (employee, prop), group in sorted(grouped.items()):
@@ -70,12 +80,12 @@ def build_report(
         else {"version": policy.version, "in_force": in_force(policy, today)},
         "discrepancies": discrepancies,
         "not_observed": sorted(
-            (f for f in facts if not f["observed_in_latest_run"]), key=key
+            (f for f in all_facts if not f["observed_in_latest_run"]), key=key
         ),
         "validation_violations": sorted(
             (
                 f
-                for f in facts
+                for f in all_facts
                 if any(o["validation"] == "Violation" for o in f["observations"])
             ),
             key=key,

@@ -156,8 +156,24 @@ Findings are worked out each time the report is built. They are never stored, an
 never change a review state. There is no severity scale: how serious a finding is
 remains a decision for the data owner.
 
+## Trusted and diagnostic queries
+
+A query names its trust scope; there is no default. A trusted query answers from
+accepted assertions only. It says how many other values exist for each employee and
+property, in any state other than Accepted, but never shows them, so a missing or
+contested trusted value is disclosed rather than hidden. A diagnostic query (scope
+`all`) shows every value with its review state. Both give each value's source,
+observations and latest review event, and both flag more than one value for the same
+employee and property without picking one.
+
+A trusted query checks first that the trusted and untrusted graphs agree with the
+review events. If they do not, it refuses to answer instead of risking an unaccepted
+value in a trusted answer.
+
 ## Current limitations
 
+- Queries are a lookup by employee and property. There are no named business
+  questions yet, and no SPARQL.
 - The reviewer name is a free-text local label. It does not authenticate anyone and must
   not be relied on as access control.
 - The reviewer roles in the authority policy are not checked. They tell people who
