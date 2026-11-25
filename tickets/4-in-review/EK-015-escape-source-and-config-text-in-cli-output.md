@@ -228,3 +228,4 @@ before, apart from the fix.
 - 2026-11-25 — TO DO → READY: plan complete
 - 2026-11-25 — plan amended inline: applicability gate G1–G3 (non-blocking, owner-approved). G1: openpyxl rejects `[`/`:` in sheet titles, so the markup goes in the workbook file name and the sheet title carries a C1 character. G2: a policy has no rationale field, so `[/x]` enters the rationale through an authoritative source id, and a second future-dated policy covers the not-in-force line. G3: the JSON check is on `json.loads` output plus no raw ESC byte
 - 2026-11-25 — READY → IN DEVELOPMENT: picked up; gate G1–G3 non-blocking, plan amended inline
+- 2026-11-25 — IN DEVELOPMENT → IN REVIEW: acceptance green
