@@ -9,7 +9,7 @@ hand — edit the tickets. Hand-written planning notes live in [`NOTES.md`](NOTE
 **WIP limits (per child-project):**
 - `employee-knowledge`: `3-in-development/` ≤ 1 · `4-in-review/` ≤ 1
 
-Last updated: 2026-11-24
+Last updated: 2026-11-25
 
 ## IN DEVELOPMENT
 
@@ -63,7 +63,7 @@ Last updated: 2026-11-24
 |---|---|---|
 | EK-001 | Confirm architecture decisions and domain vocabulary with the data owner | yes — merged to main (PR #2, e3d155b, https://github.com/codcod/employee-knowledge/commit/e3d155b) |
 | EK-002 | Run tests and lint in GitHub Actions | yes — merged to main (PR #1, e85897b, https://github.com/codcod/employee-knowledge/commit/e85897b) |
-| EK-003 | Add data-quality and freshness findings | no — publish-gated |
+| EK-003 | Add data-quality and freshness findings | yes — merged to main (PR #4, cce95a9, https://github.com/codcod/employee-knowledge/commit/cce95a9) |
 | EK-004 | Define attribute-level source-authority policy model | yes — merged to main (PR #3, 98bc9f7, https://github.com/codcod/employee-knowledge/commit/98bc9f7) |
 | EK-011 | Package the ontology so ek installs as a regular dependency | yes — merged to main (local fast-forward, no MR, no remote; 6f307c1..4f023ea) |
 | EK-013 | Choose a licence and a project-owned ontology namespace | yes — merged to main (local fast-forward, no MR, no remote; 753a9ca..7de854c) |

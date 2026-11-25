@@ -329,3 +329,4 @@ Checklist:
 - 2026-11-24 — plan amended inline: decision 4's freshness-unknown text now matches review F2 (any unusable time gives freshness-unknown) (review R3)
 - 2026-11-24 — IN REVIEW → DONE: review round 2 clean: 0 blocking; round 1 F1–F4 fixed; dispositions 6 noted, 5 fixed inline, 3 folded (EK-015), 0 new tickets
 - 2026-11-25 — published (owner-approved): tidied to 2 commits (8b4b139 feat, 78851e0 docs, history kept), pushed `main` first, PR https://github.com/codcod/employee-knowledge/pull/4. Merging is the owner's
+- 2026-11-25 — merged to main (PR #4, cce95a9, https://github.com/codcod/employee-knowledge/commit/cce95a9)
