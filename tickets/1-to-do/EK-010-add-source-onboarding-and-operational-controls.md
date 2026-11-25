@@ -35,3 +35,4 @@ Acceptance: a new source can be onboarded through documented configuration and r
 
 - 2026-11-18 — created (TO DO). source: chat: migrated from roadmap Task-018 when Brine was set up
 - 2026-11-19 — description patched (EK-001 review, step 8): the §13 answers are recorded by EK-014, split from EK-001
+- 2026-11-25 — impact sweep (EK-012 review): `docs/source-onboarding.md` gained "Adding a source kind from another package" (plugin rules, dependency instructions); fold operational controls for plugin kinds in there

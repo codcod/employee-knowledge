@@ -20,11 +20,10 @@ Last updated: 2026-11-25
 
 ## IN REVIEW
 
-### employee-knowledge (1/1)
+### employee-knowledge (0/1)
 
 | id | title | depends-on |
 |---|---|---|
-| EK-012 | Add an extension point for third-party source adapters | [] |
 
 ## REWORK
 
@@ -66,6 +65,7 @@ Last updated: 2026-11-25
 | EK-004 | Define attribute-level source-authority policy model | yes — merged to main (PR #3, 98bc9f7, https://github.com/codcod/employee-knowledge/commit/98bc9f7) |
 | EK-005 | Add trusted-only and evidence-inclusive query interfaces | yes — merged to main (PR #5, 34c8600, https://github.com/codcod/employee-knowledge/commit/34c8600) |
 | EK-011 | Package the ontology so ek installs as a regular dependency | yes — merged to main (local fast-forward, no MR, no remote; 6f307c1..4f023ea) |
+| EK-012 | Add an extension point for third-party source adapters | no — publish-gated |
 | EK-013 | Choose a licence and a project-owned ontology namespace | yes — merged to main (local fast-forward, no MR, no remote; 753a9ca..7de854c) |
 
 ## DROPPED
