@@ -356,3 +356,4 @@ cost: estimated M, actual M
 - 2026-11-25 — plan amended inline: decision 8 now has ek verify file provenance (re-hash, own file name) and refuse unusable plugin records, per the owner's sign-off on review F2 and blocking F1
 - 2026-11-25 — REWORK → IN REVIEW: findings fixed
 - 2026-11-25 — IN REVIEW → DONE: re-review clean: F1, F2 fixed; fixed inline 3 (F7, F8, F9); noted 5 (F3-F6, F10); no new tickets
+- 2026-11-25 — published: owner approved two tidied commits (4261b16 feat, 389eb71 docs), history kept; main pushed first, in-tree base check clean; branch pushed, PR #6 opened (https://github.com/codcod/employee-knowledge/pull/6). Awaiting the human merge
