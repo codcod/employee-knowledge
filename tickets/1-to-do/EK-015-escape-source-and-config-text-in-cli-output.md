@@ -64,3 +64,4 @@ bracketed synthetic values in every printing command.
 - 2026-11-24 — folded EK-004 re-review R1 (emoji shortcodes in policy text are still rendered)
 - 2026-11-24 — folded EK-003 review F11–F13 (unescaped report tables, terminal control characters, emoji in the findings table)
 - 2026-11-25 — note (EK-005 applicability gate): the new `query` command builds its table cells as `rich.text.Text`, so markup and emoji shortcodes in source text are not interpreted there. Terminal control characters are not stripped yet; include `query` in that fix
+- 2026-11-25 — folded EK-005 review F1: `query` passes ESC and C1 (U+009B) control sequences in source text to the terminal, in table cells and in the trusted-scope "no trusted value" / "N unaccepted" lines; `--json` is safe. Reproduced with a synthetic `department="Eng\x1b[31mRED"`. Cover `query` alongside `report`
