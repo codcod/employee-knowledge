@@ -277,3 +277,4 @@ cost: estimated M, actual M
 - 2026-11-25 — IN DEVELOPMENT → IN REVIEW: acceptance green
 - 2026-11-25 — IN REVIEW → DONE: review: no blocking findings; fixed inline 4 (F2–F5), folded 1 (F1 -> EK-015), noted 4 (F6–F9); no spawned tickets
 - 2026-11-25 — published (owner-approved): tidied to 3 commits (b5e4f50 refactor, 6999081 feat, 2372388 docs, history kept), pushed `main` first, PR https://github.com/codcod/employee-knowledge/pull/5. Merging is the owner's
+- 2026-11-25 — merged to main (PR #5, 34c8600, https://github.com/codcod/employee-knowledge/commit/34c8600)
