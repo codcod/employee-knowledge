@@ -20,10 +20,11 @@ Last updated: 2026-11-25
 
 ## IN REVIEW
 
-### employee-knowledge (0/1)
+### employee-knowledge (1/1)
 
 | id | title | depends-on |
 |---|---|---|
+| EK-012 | Add an extension point for third-party source adapters | [] |
 
 ## REWORK
 
@@ -31,7 +32,6 @@ Last updated: 2026-11-25
 
 | id | title | open findings |
 |---|---|---|
-| EK-012 | Add an extension point for third-party source adapters | 2 blocking findings (F1 plugin record invariants, F2 unverified file provenance) |
 
 ## READY (impact order, per child)
 

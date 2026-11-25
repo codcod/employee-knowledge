@@ -130,7 +130,11 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
    `ek.ingest.ingest` and SHACL unchanged, so a missing or malformed `sha256` or
    `file_name` is a model finding, and nothing is saved (exit 2). `ingest` refuses a
    record value whose field is not in the source's `mapping` with a `SourceError`
-   (exit 1, nothing saved), so a plugin cannot add properties (gate G1).
+   (exit 1, nothing saved), so a plugin cannot add properties (gate G1). Amended at
+   review (owner sign-off 2026-11-25, F1/F2): the CLI re-hashes the file and refuses a
+   `sha256` that does not match or a `file_name` that is not the file's own name; `ingest`
+   also refuses a blank, untrimmed or non-str employee ID, an ID on two records of one
+   read, and a non-str value, each with `SourceError` (exit 1, nothing saved).
 9. **An ADR records the contract.** It is the next free number, "Source adapter
    plugins". It covers decisions 1–8, the file-sources-only limit, and that the API
    source-version design is left to EK-007 (owner decision 2026-11-21). Its
@@ -304,6 +308,13 @@ Reviewed 2026-11-25 on `feat/EK-012-adapter-plugins` (b273e8b, 7832a02; inline f
 | F7 | non-blocking | docs-gap | fixed inline | The plugin rules banned employee data in `SourceError` messages but not in quarantine reasons or record references, which are printed too | `docs/source-onboarding.md` "Rules for a source kind"; `src/ek/cli.py` prints both | Clause added (3b7c03a) |
 | F8 | non-blocking | spec-unclear | fixed inline | ADR-0011 said `report`, `report-json` and `review` always load plugins. They do so only when a policy is loaded | `src/ek/cli.py` `_policy`: `load_sources` runs only `if path.exists()` | Reworded (3b7c03a) |
 
+### Rework fix record — round 1 (commit 72708cf)
+
+- F1: `ingest._check_records` refuses a record whose employee ID is not non-blank, trimmed str, an ID on two records of one read, a non-str value, and an unmapped field. Each is a `SourceError` naming source references only. Tests: `test_ingest_refuses_unusable_records` (7 cases).
+- F2: `cli._check_file` re-hashes the file after `read` and refuses a mismatched `sha256` or a `file_name` other than `path.name`. Tests: `test_plugin_file_provenance_is_verified` (lie-sha, abs-name). The former bad-sha exit-2 test became `test_plugin_model_finding_aborts_and_saves_nothing`, which uses a blank source reference, so the model-finding path is still covered.
+- Decision 8 amended in the plan and ADR-0011. `docs/source-onboarding.md` rules updated ("File provenance", "Usable records").
+- Without the fix, 8 of the new tests fail. With it, `uv run pytest` gives 245 passed, and both ruff checks are clean.
+
 Dispositions: blocking 2 (F1, F2) · fixed inline 2 (F7, F8) · folded 0 · noted 4 (F3, F4, F5, F6) · new ticket 0.
 cost: estimated M, actual M
 
@@ -318,3 +329,5 @@ cost: estimated M, actual M
 - 2026-11-25 — READY → IN DEVELOPMENT: picked up
 - 2026-11-25 — IN DEVELOPMENT → IN REVIEW: acceptance green
 - 2026-11-25 — IN REVIEW → REWORK: 2 blocking findings (F1 plugin record invariants, F2 unverified file provenance)
+- 2026-11-25 — plan amended inline: decision 8 now has ek verify file provenance (re-hash, own file name) and refuse unusable plugin records, per the owner's sign-off on review F2 and blocking F1
+- 2026-11-25 — REWORK → IN REVIEW: findings fixed
