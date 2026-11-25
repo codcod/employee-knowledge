@@ -274,7 +274,38 @@ uv run employee-knowledge ingest examples/employees.xlsx --source-id jira-user-d
 
 ## Review
 
-<!-- empty until IN REVIEW -->
+Reviewed 2026-11-25 on `feat/EK-012-adapter-plugins` (b273e8b, 7832a02; inline fixes 3b7c03a).
+
+- [x] Reviewer independence settled (step 0): **delegated**. The orchestrator wrote the branch, so a fresh sub-agent with no hand in it ran steps 1 to 4a (hunt: angle 7 only). The orchestrator re-verified its 4 findings: its F1 (false sha256) by its reproduction, its F4 by a second reproduction, its F2 and F3 by reading the code.
+- [x] In-tree stale-branch check (step 0a): `pickle doctor` warned that the branch had the ticket in `3-in-development`. Rebased onto `main`, and it is now clean. The reviewer's own run was also clean.
+- [x] Implementation audit (steps 1, 2): Tasks 1 to 5 are met and decisions 1 to 10 are honoured. The acceptance test was re-run verbatim on synthetic data, and the manual output matched. `uv run pytest`: 236 passed. `ruff check` and `ruff format --check` are clean.
+- [x] Correctness hunt (step 3): **host tool path**. The top-level session ran `/code-review medium` on `main...feat/EK-012-adapter-plugins`, which reported 8 findings. Two were discarded on re-verification:
+  - Disabled plugin-kind sources still load their plugin, so an uninstalled plugin breaks every command. This is the owner-approved gate G3, with the consequence recorded in ADR-0011 (G4).
+  - `excel` resolves only through installed metadata. This is decision 2's stated consequence, recorded in the ADR.
+
+  The tool does not review for security, so the delegated reviewer ran angle 7 separately. F1 and F2 are reproduced; F3 to F6 are traced.
+- [x] Consistency audit (step 4): no stale `SourceAdapter`, `_KIND_KEYS`, `.sheet` or "Workbook sha256" references remain. ADR-0011's consequence wording was fixed (F8). Rich markup and control characters in plugin-supplied text are already EK-015's (gate G2 note).
+- [x] Documentation audit (step 4a):
+  - `docs/source-onboarding.md` has the new section, the fixed key table and the dependency docs (F4 from EK-011). `docs/operating.md` covers `ingest`.
+  - The anchors resolve, and no `docs/` page links to `development/`.
+  - No docs build is configured. F7 was fixed inline.
+- [x] Docs-readability pass (step 4b): skipped. It is optional, and the changed prose was reviewed in the docs audit.
+- [x] Findings recorded with severity, class and disposition; the summary and cost lines are below (step 5).
+- [x] Ticket moved to `tickets/5-rework/` with a `## History` line (step 6a).
+
+| id | severity | class | disposition | description | evidence | suggestion |
+|---|---|---|---|---|---|---|
+| F1 | blocking | correctness | — | `ingest` trusts a plugin's records. Duplicate employee IDs in one read are accepted, so the source contradicts itself; Excel quarantines them. A blank ID gives a `ValueError` traceback, a non-str value an `AttributeError`, and a padded ID an `IngestError` (exit 2, reported as a system fault) | Reproduced by calling `ingest()` directly with synthetic records: `dup id: ACCEPTED 2 assertions`; `blank id: ValueError issuer and employee_id must not be empty`; `int value: AttributeError 'int' object has no attribute 'strip'`. The padded ID came from the reviewer's `probe.py` | Check each record at the top of `ingest`: the ID is a non-blank, trimmed str, no ID appears twice, and values are str. Otherwise raise `SourceError` (exit 1, nothing saved). Add regression tests |
+| F2 | blocking | correctness | — | A plugin's well-formed but false `sha256` is stored as the file's hash, exit 0, and an absolute `file_name` is accepted. That fabricates file provenance (§3.2). EK-012 decision 8 left this to SHACL, which checks the format only. The owner signed off on changing decision 8 (2026-11-25) | Reproduced (reviewer, `scratchpad/review-ek012/sha/`): a plugin returning `"0"*64` exits 0 and the store holds `sha256 "0000…"`, while the real hash is `19c8226f…`. `ReadResult("/Users/someone/HR/secret.csv", …)` ingests | In `cli._ingest`, refuse with `SourceError` unless `result.sha256` equals the sha256 of the file's bytes and `result.file_name == path.name`. Add a lying-sha plugin variant and a test |
+| F3 | non-blocking | correctness | noted | A plugin exception other than `SourceError` or `ConfigError` (from `read` or `parse_options`), or a non-dict options return, gives a traceback instead of exit 1. Nothing is saved, and typer prints no locals | Traced: `cli._ingest` catches only `ConfigError`, `SourceError` and `IngestError`, and `config._parse` calls `parse_options` unwrapped. The contract (decision 3, gate G1) requires `SourceError`/`ConfigError` | Wrap plugin calls, if third-party plugins turn out to be careless |
+| F4 | non-blocking | design | noted | An entry point that names a class instead of an instance loads fine, then fails later with a `TypeError` traceback | Traced: `registry.load_adapter` returns `ep.load()` unchecked | Check that `parse_options` and `read` are callable after loading |
+| F5 | non-blocking | correctness | noted | A directory as the path gives an `IsADirectoryError` traceback. This existed already in `ingest-excel` and `ingest` inherits it | Traced: `SourceFile` has no `dir_okay=False`, and `ExcelAdapter.read` calls `read_bytes()` outside its caught exceptions | `dir_okay=False` on `SourceFile` |
+| F6 | non-blocking | design | noted | `_ingest` looks the plugin up again after config parsing has loaded it, and relies on "enabled sources always have a plugin" | `src/ek/cli.py` `_ingest` | Carry the resolved plugin on the parsed source, if a second lookup ever matters |
+| F7 | non-blocking | docs-gap | fixed inline | The plugin rules banned employee data in `SourceError` messages but not in quarantine reasons or record references, which are printed too | `docs/source-onboarding.md` "Rules for a source kind"; `src/ek/cli.py` prints both | Clause added (3b7c03a) |
+| F8 | non-blocking | spec-unclear | fixed inline | ADR-0011 said `report`, `report-json` and `review` always load plugins. They do so only when a policy is loaded | `src/ek/cli.py` `_policy`: `load_sources` runs only `if path.exists()` | Reworded (3b7c03a) |
+
+Dispositions: blocking 2 (F1, F2) · fixed inline 2 (F7, F8) · folded 0 · noted 4 (F3, F4, F5, F6) · new ticket 0.
+cost: estimated M, actual M
 
 ## History
 
@@ -286,3 +317,4 @@ uv run employee-knowledge ingest examples/employees.xlsx --source-id jira-user-d
 - 2026-11-25 — plan amended inline: decisions 3, 4, 8, 9 and new 10 (plugin read raises SourceError; ingest refuses unmapped fields; disabled plugin sources fully validated; ADR-0011 Proposed with G4 consequence and ADR-0007 'amended by' pointer; 'File sha256'), docs step fixes the existing key table, one extra test
 - 2026-11-25 — READY → IN DEVELOPMENT: picked up
 - 2026-11-25 — IN DEVELOPMENT → IN REVIEW: acceptance green
+- 2026-11-25 — IN REVIEW → REWORK: 2 blocking findings (F1 plugin record invariants, F2 unverified file provenance)
