@@ -31,15 +31,24 @@ and ingest again.
 
 ## Commands
 
-### Ingest an Excel workbook
+### Ingest a file
 
 ```bash
+uv run employee-knowledge ingest <file> --source-id <id> [--config <path>]
 uv run employee-knowledge ingest-excel <workbook.xlsx> --source-id <id> [--config <path>]
 ```
 
 - Reads the source configuration from `config/sources.toml`, or the file named by
   `--config`. Start by copying `examples/sources.toml`. The `--source-id` must name an
-  enabled Excel source in that file.
+  enabled source in that file.
+- `ingest` reads the file with the source's kind: `excel`, or a kind an installed
+  package adds (see [source-onboarding.md](source-onboarding.md)). `ingest-excel` does
+  the same, but only for Excel sources. Both print the same summary and use the same
+  exit statuses: 1 when the configuration or the file cannot be used, 2 when the system
+  produced an invalid record. In both cases nothing is saved.
+
+For Excel sources:
+
 - Reads the sheet set by the source's `sheet` key, or the active sheet if none is set.
 - The first row holds the headers. Every column named in the source's `mapping` must be
   present; unmapped columns are ignored. The command stops without ingesting anything if
@@ -54,7 +63,7 @@ uv run employee-knowledge ingest-excel <workbook.xlsx> --source-id <id> [--confi
 - Each non-blank mapped value becomes one assertion in the untrusted graph. Leading and
   trailing spaces are trimmed, and work email addresses are lowercased.
 - Each ingestion is a run with its own named graph. The command prints the run, how many
-  values it observed, how many were new assertions, and the SHA-256 of the workbook.
+  values it observed, how many were new assertions, and the SHA-256 of the file.
   Values already stored, trusted or not, are recorded as observed again but keep their
   trust state.
 - Values that fail structural validation are stored, flagged and counted. If the system

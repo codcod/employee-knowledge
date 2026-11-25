@@ -2,6 +2,8 @@
 
 - **Status:** Accepted (2026-11-17)
 - **Related:** ADR-0003, ADR-0004
+- **Amended by:** [ADR-0011](0011-source-adapter-plugins.md): kinds come from adapter
+  plugins, and every key outside the common ones is the plugin's option.
 
 ## Context
 
