@@ -11,7 +11,7 @@ from rdflib.namespace import PROV, RDF, XSD
 import ek.ingest
 from ek.adapters.base import EmployeeRecord, QuarantinedRecord, ReadResult
 from ek.config import SourceConfig
-from ek.constants import EK, UNTRUSTED_GRAPH
+from ek.constants import EK, FIELD_PREDICATES, UNTRUSTED_GRAPH
 from ek.graph.store import KnowledgeStore
 from ek.identity import employee_uri, source_uri
 from ek.ingest import IngestError, assertion_uri, ingest
@@ -28,7 +28,7 @@ def hr(**kw):
         "excel",
         issuer="example-hr",
         mapping_version="1",
-        mapping={"employee_id": "id"},
+        mapping={"employee_id": "id", **{f: f for f in FIELD_PREDICATES}},
         **kw,
     )
 
@@ -143,7 +143,7 @@ def test_issuers_never_merge(tmp_path):
         "excel",
         issuer="jira",
         mapping_version="1",
-        mapping={"employee_id": "id"},
+        mapping={"employee_id": "id", **{f: f for f in FIELD_PREDICATES}},
     )
     ingest(store, other, read(rec(department="Eng")), T0)
     employees = set(untrusted(store).subjects(RDF.type, EK.Employee))
@@ -158,7 +158,7 @@ def test_conflict_between_sources_stays_visible(tmp_path):
         "excel",
         issuer="example-hr",
         mapping_version="1",
-        mapping={"employee_id": "id"},
+        mapping={"employee_id": "id", **{f: f for f in FIELD_PREDICATES}},
     )
     ingest(store, other, read(rec(department="Product")), T0)
     [item] = build_report(store)["discrepancies"]
@@ -188,7 +188,7 @@ def test_model_finding_aborts_and_stores_nothing(tmp_path):
         "excel",
         issuer="example-hr",
         mapping_version=" ",
-        mapping={"employee_id": "id"},
+        mapping={"employee_id": "id", **{f: f for f in FIELD_PREDICATES}},
     )
     with pytest.raises(IngestError) as exc:
         ingest(store, broken, read(rec(department="Ops")), T0)

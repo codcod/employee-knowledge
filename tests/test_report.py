@@ -10,7 +10,7 @@ import ek.ingest
 from ek.adapters.base import EmployeeRecord, QuarantinedRecord, ReadResult
 from ek.cli import app
 from ek.config import SourceConfig
-from ek.constants import EK
+from ek.constants import EK, FIELD_PREDICATES
 from ek.graph.store import KnowledgeStore
 from ek.ingest import assertion_uri, ingest
 from ek.reconcile import build_report
@@ -25,7 +25,7 @@ def load(store, source="hr", day=1, quarantined=(), **records):
         "excel",
         issuer="example-hr",
         mapping_version="1",
-        mapping={"employee_id": "id"},
+        mapping={"employee_id": "id", **{f: f for f in FIELD_PREDICATES}},
     )
     rows = [
         EmployeeRecord(emp, {"department": dept}, f"{source}.xlsx#People!{n}")

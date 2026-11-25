@@ -10,7 +10,13 @@ from typer.testing import CliRunner
 from ek.adapters.base import EmployeeRecord, ReadResult
 from ek.cli import app
 from ek.config import SourceConfig
-from ek.constants import AUDIT_GRAPH, EK, TRUSTED_GRAPH, UNTRUSTED_GRAPH
+from ek.constants import (
+    AUDIT_GRAPH,
+    EK,
+    FIELD_PREDICATES,
+    TRUSTED_GRAPH,
+    UNTRUSTED_GRAPH,
+)
 from ek.graph.store import KnowledgeStore
 from ek.identity import employee_uri
 from ek.ingest import assertion_uri, ingest
@@ -26,7 +32,7 @@ def src(source_id):
         "excel",
         issuer="example-hr",
         mapping_version="1",
-        mapping={"employee_id": "id"},
+        mapping={"employee_id": "id", **{f: f for f in FIELD_PREDICATES}},
     )
 
 

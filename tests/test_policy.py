@@ -12,7 +12,7 @@ from typer.testing import CliRunner
 from ek.adapters.base import EmployeeRecord, ReadResult
 from ek.cli import app
 from ek.config import SourceConfig
-from ek.constants import AUDIT_GRAPH, EK, UNTRUSTED_GRAPH
+from ek.constants import AUDIT_GRAPH, EK, FIELD_PREDICATES, UNTRUSTED_GRAPH
 from ek.graph.store import KnowledgeStore
 from ek.ingest import assertion_uri, ingest
 from ek.policy import (
@@ -58,7 +58,7 @@ def load(store, source, day=1, **records):
         "excel",
         issuer="example-hr",
         mapping_version="1",
-        mapping={"employee_id": "id"},
+        mapping={"employee_id": "id", **{f: f for f in FIELD_PREDICATES}},
     )
     rows = [
         EmployeeRecord(emp, {"department": dept}, f"{source}.xlsx#People!{n}")

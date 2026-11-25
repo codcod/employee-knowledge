@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import PROV, RDF, XSD
 
-from .adapters.base import ReadResult
+from .adapters.base import ReadResult, SourceError
 from .config import SourceConfig
 from .constants import EK, FIELD_PREDICATES, RUN_GRAPH_PREFIX
 from .graph.store import KnowledgeStore
@@ -38,6 +38,27 @@ def assertion_uri(
     )
 
 
+def _check_records(source: SourceConfig, result: ReadResult) -> None:
+    """Hold every adapter to what the Excel adapter guarantees (ADR-0011). Messages
+    name source references only: IDs and values are employee data."""
+    mapped = set(source.mapping) - {"employee_id"}  # ontology first
+    seen: dict[str, str] = {}
+    for r in result.records:
+        ref = r.source_reference
+        key = r.employee_id
+        if not isinstance(key, str) or not key or key != key.strip():
+            raise SourceError(f"adapter returned an unusable employee ID at {ref}")
+        if key in seen:  # the source would contradict itself; Excel quarantines these
+            raise SourceError(
+                f"adapter returned the same employee ID at {seen[key]} and {ref}"
+            )
+        seen[key] = ref
+        if extra := set(r.values) - mapped:
+            raise SourceError(f"adapter returned unmapped fields {sorted(extra)}")
+        if not all(isinstance(v, str) for v in r.values.values()):
+            raise SourceError(f"adapter returned a value that is not text at {ref}")
+
+
 class IngestError(RuntimeError):
     """The run produced structurally invalid records (a bug). Nothing was stored."""
 
@@ -63,6 +84,7 @@ def ingest(
     started_at: datetime,
 ) -> IngestSummary:
     """Add one run to ``store`` in memory. The caller saves; on error nothing changes."""
+    _check_records(source, result)
     run_id = uuid.uuid4()
     run = URIRef(f"urn:employee-knowledge:run:{run_id}")
     src = source_uri(source.id)

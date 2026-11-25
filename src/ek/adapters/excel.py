@@ -7,7 +7,7 @@ from pathlib import Path
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
 
-from ..config import SourceConfig
+from ..config import ConfigError, SourceConfig
 from .base import EmployeeRecord, QuarantinedRecord, ReadResult, SourceError
 
 
@@ -33,7 +33,7 @@ class ExcelAdapter:
         return result
 
     def _read_sheet(self, workbook, result: ReadResult) -> None:
-        name = self.source.sheet
+        name = self.source.options.get("sheet")
         if name is not None and name not in workbook.sheetnames:
             raise SourceError(f"{self.path.name}: no sheet named '{name}'")
         sheet = workbook[name] if name else workbook.active
@@ -87,3 +87,25 @@ class ExcelAdapter:
                 )
             else:
                 result.records.append(record)
+
+
+class ExcelPlugin:
+    """The ``excel`` source kind (ADR-0011). Its one option is ``sheet``."""
+
+    def parse_options(
+        self, options: dict[str, object], where: str
+    ) -> dict[str, object]:
+        if unknown := set(options) - {"sheet"}:
+            raise ConfigError(f"{where}: unknown keys {sorted(unknown)}")
+        if "sheet" not in options:
+            return {}
+        sheet = options["sheet"]
+        if not isinstance(sheet, str) or not sheet.strip():
+            raise ConfigError(f"{where}: 'sheet' must be a non-blank string")
+        return {"sheet": sheet.strip()}
+
+    def read(self, path: Path, source: SourceConfig) -> ReadResult:
+        return ExcelAdapter(path, source).read()
+
+
+plugin = ExcelPlugin()

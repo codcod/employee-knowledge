@@ -18,6 +18,9 @@ dev = ["pytest>=8,<9", "ruff>=0.5,<1"]
 [project.scripts]
 employee-knowledge = "ek.cli:app"
 
+[project.entry-points."employee_knowledge.adapters"]
+excel = "ek.adapters.excel:plugin"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

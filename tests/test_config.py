@@ -30,7 +30,7 @@ def load(tmp_path, text):
 def test_example_config_loads():
     sources = load_sources(EXAMPLE)
     hr = get_source(sources, "hr-export")
-    assert (hr.kind, hr.issuer, hr.sheet, hr.mapping_version) == (
+    assert (hr.kind, hr.issuer, hr.options.get("sheet"), hr.mapping_version) == (
         "excel",
         "example-hr",
         "Employees",
@@ -42,7 +42,7 @@ def test_example_config_loads():
 
 def test_minimal_excel_source(tmp_path):
     hr = get_source(load(tmp_path, EXCEL.format(extra="", mapping="")), "hr")
-    assert hr.sheet is None and hr.mapping == {"employee_id": "employee_id"}
+    assert hr.options == {} and hr.mapping == {"employee_id": "employee_id"}
 
 
 @pytest.mark.parametrize(

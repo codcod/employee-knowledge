@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import typing as tp
@@ -11,8 +12,8 @@ from rich.markup import escape
 from rich.table import Table
 from rich.text import Text
 
-from .adapters.base import SourceError
-from .adapters.excel import ExcelAdapter
+from .adapters.base import ReadResult, SourceError
+from .adapters.registry import load_adapter
 from .config import DEFAULT_CONFIG, ConfigError, get_source, load_sources
 from .constants import TRUSTED_GRAPH, UNTRUSTED_GRAPH
 from .graph.store import KnowledgeStore
@@ -87,18 +88,46 @@ def _policy_line(data: dict, item: dict) -> str:
     return line
 
 
+SourceFile = tp.Annotated[Path, typer.Argument(exists=True, readable=True)]
+SourceId = tp.Annotated[str, typer.Option("--source-id")]
+SourcesPath = tp.Annotated[Path, typer.Option("--config")]
+
+
+@app.command("ingest")
+def ingest_file(
+    path: SourceFile, source_id: SourceId, config: SourcesPath = DEFAULT_CONFIG
+):
+    """Ingest a file with the adapter of its source's kind."""
+    _ingest(path, source_id, config)
+
+
 @app.command("ingest-excel")
 def ingest_excel(
-    workbook: tp.Annotated[Path, typer.Argument(exists=True, readable=True)],
-    source_id: tp.Annotated[str, typer.Option("--source-id")],
-    config: tp.Annotated[Path, typer.Option("--config")] = DEFAULT_CONFIG,
+    workbook: SourceFile, source_id: SourceId, config: SourcesPath = DEFAULT_CONFIG
 ):
+    _ingest(workbook, source_id, config, excel_only=True)
+
+
+def _check_file(path: Path, result: ReadResult) -> None:
+    """File provenance is checked by ek, not taken from the adapter (ADR-0011)."""
+    if result.file_name != path.name:
+        raise SourceError(f"{path.name}: the adapter reported another file name")
+    if result.sha256 != hashlib.sha256(path.read_bytes()).hexdigest():
+        raise SourceError(
+            f"{path.name}: the adapter's sha256 does not match the file "
+            "(or the file changed while it was read)"
+        )
+
+
+def _ingest(path: Path, source_id: str, config: Path, excel_only: bool = False):
     started = datetime.now(UTC)
     try:
         source = get_source(load_sources(config), source_id)
-        if source.kind != "excel":
+        if excel_only and source.kind != "excel":
             raise ConfigError(f"Source '{source_id}' is not an Excel source")
-        result = ExcelAdapter(workbook, source).read()
+        # Enabled sources always have a plugin: placeholders must be disabled.
+        result = load_adapter(source.kind).read(path, source)
+        _check_file(path, result)
         store = KnowledgeStore(store_path())
         summary = ingest(store, source, result, started)
     except (ConfigError, SourceError) as exc:
@@ -116,7 +145,7 @@ def ingest_excel(
         f"observations of {summary.assertions} assertions "
         f"({summary.new_assertions} new, added to the untrusted graph)."
     )
-    print(f"Workbook sha256 {result.sha256}")
+    print(f"File sha256 {result.sha256}")
     if summary.value_violations:
         print(
             f"[yellow]{summary.value_violations} observations failed value "

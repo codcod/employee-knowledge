@@ -22,9 +22,9 @@ def source(sheet=None, mapping=MAPPING):
         "hr",
         "excel",
         issuer="example-hr",
-        sheet=sheet,
         mapping_version="1",
         mapping=mapping,
+        options={} if sheet is None else {"sheet": sheet},
     )
 
 
