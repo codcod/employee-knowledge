@@ -163,6 +163,47 @@ conflict with another review action.
 
 The reviewer label is free text. It identifies nobody and grants nothing.
 
+### Query facts
+
+```bash
+uv run employee-knowledge query --scope trusted|all [--employee-id <id>] [--issuer <issuer>] [--property <field>] [--json]
+```
+
+`--scope` is required. There is no default trust level:
+
+- **`trusted`:** accepted values only, read from the trusted graph. A line under the
+  table says how many other values exist for an employee and property: "N unaccepted
+  value(s) not shown; use --scope all". Unaccepted means any review state other than
+  Accepted: Candidate, NeedsEvidence, Rejected or Superseded. Those values are counted
+  but never shown. When nothing is accepted yet, the line "no trusted value" says so.
+- **`all`:** every value with its review state, from the trusted and untrusted graphs.
+  Use it to see what a trusted answer leaves out.
+
+The table title names the scope and the graphs read. Each row gives the employee,
+issuer, property, value, source, review state and source references. When an employee
+and property have more than one value in the scope (in `trusted`, more than one
+accepted value), a row says so; no value is picked.
+
+Filters combine. `--property` takes a field name such as `department` or
+`employment_status`; an unknown name is an error. `--employee-id` without `--issuer`
+matches the ID under every issuer, but each issuer's employee is listed separately and
+never merged. With no filter, every employee and property is listed.
+
+`--json` prints the results instead: one entry per employee and property, with
+`values`, `conflict` and, in `trusted` scope, `untrusted_candidates` (the count above).
+Each fact gives its assertion URI, source, review state, whether the source's latest
+run observed it, every observation (run, source reference, exact source text,
+observation time and validation result) and `latest_review`: the reviewer label,
+action, reason, policy version and time of its latest review event, or `null`.
+
+The command only reads; it never changes the store. If the trusted and untrusted
+graphs disagree with the review events, `trusted` scope refuses to answer ("projection
+out of date; run rebuild-projection") and exits with status 1, rather than risk showing
+an unaccepted value. Run `rebuild-projection` (below), then query again. A missing
+`--scope` or an unknown scope exits with status 2.
+
+The output shows employee data. Treat it like the store.
+
 ### Rebuild the trusted and untrusted graphs
 
 ```bash
@@ -197,12 +238,20 @@ uv run employee-knowledge ingest-excel examples/employees-directory.xlsx --sourc
 uv run employee-knowledge report
 uv run employee-knowledge report-json --output reports/demo.json
 
+# No trusted department for E-1002 yet: "2 unaccepted value(s) not shown".
+uv run employee-knowledge query --scope trusted --employee-id E-1002 --property department
+
 # Accept the HR value, using its "assertion" URI from reports/demo.json.
 uv run employee-knowledge review accept <assertion-uri> --reviewer demo --reason "Matches HR"
 
 # The accepted value is now in the trusted graph. The directory value is still a
 # candidate, and the discrepancy is still reported.
 uv run employee-knowledge report
+
+# The trusted answer is "People", with "1 unaccepted value(s) not shown". The all
+# scope shows both values, Accepted and Candidate, and flags the conflict.
+uv run employee-knowledge query --scope trusted --employee-id E-1002 --property department
+uv run employee-knowledge query --scope all --employee-id E-1002 --property department
 
 # Ingesting again adds runs and observations but no assertions, and changes no state.
 uv run employee-knowledge ingest-excel examples/employees.xlsx --source-id hr-export

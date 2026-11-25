@@ -30,8 +30,8 @@ source's value instead, and makes trust an explicit, recorded decision:
   trusted view can always be rebuilt from the audit log.
 
 Data owners get a list of where their systems disagree; auditors get who decided what,
-when and why; later query and AI features can answer from reviewed facts and say when
-the evidence is conflicting, stale or unreviewed.
+when and why; the trusted query answers from reviewed facts only and says when values
+conflict or are still unreviewed. Later AI features will also say when evidence is stale.
 
 ## Trust model
 
