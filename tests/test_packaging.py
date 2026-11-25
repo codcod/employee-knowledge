@@ -53,6 +53,15 @@ def test_wheel_carries_licence(wheel):
     assert "License-Expression: MIT" in whl.read(metadata).decode()
 
 
+def test_wheel_registers_excel_adapter(wheel):
+    # EK-012: Excel is found through the same entry-point group as plugins.
+    whl = zipfile.ZipFile(wheel)
+    (eps,) = [n for n in whl.namelist() if n.endswith(".dist-info/entry_points.txt")]
+    text = whl.read(eps).decode()
+    assert "[employee_knowledge.adapters]" in text
+    assert "excel = ek.adapters.excel:plugin" in text
+
+
 def test_ingests_from_built_wheel(wheel, tmp_path):
     site = tmp_path / "site"
     zipfile.ZipFile(wheel).extractall(site)

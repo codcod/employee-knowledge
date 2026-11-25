@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 from ek.adapters.base import EmployeeRecord, ReadResult
 from ek.cli import app
 from ek.config import SourceConfig
-from ek.constants import EK, TRUSTED_GRAPH
+from ek.constants import EK, FIELD_PREDICATES, TRUSTED_GRAPH
 from ek.graph.store import KnowledgeStore
 from ek.ingest import assertion_uri, ingest
 from ek.query import QueryError, Scope, query_facts
@@ -24,7 +24,7 @@ def load(store, source="hr", issuer="example-hr", **records):
         "excel",
         issuer=issuer,
         mapping_version="1",
-        mapping={"employee_id": "id"},
+        mapping={"employee_id": "id", **{f: f for f in FIELD_PREDICATES}},
     )
     rows = [
         EmployeeRecord(emp, {"department": dept}, f"{source}.xlsx#People!{n}")

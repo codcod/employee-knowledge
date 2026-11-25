@@ -11,7 +11,7 @@ import ek.ingest
 from ek.adapters.base import EmployeeRecord, QuarantinedRecord, ReadResult
 from ek.cli import app
 from ek.config import SourceConfig
-from ek.constants import EK
+from ek.constants import EK, FIELD_PREDICATES
 from ek.graph.store import KnowledgeStore
 from ek.ingest import assertion_uri, ingest
 from ek.policy import Policy, PropertyPolicy
@@ -25,7 +25,13 @@ NOW = datetime(2026, 6, 1, 12, 0, tzinfo=UTC)
 
 def load(store, source="hr", issuer="example-hr", day=1, quarantined=(), **records):
     """records: employee_id -> {field: raw} or (values, observed_at)."""
-    cfg = SourceConfig(source, "excel", issuer=issuer, mapping_version="1", mapping={})
+    cfg = SourceConfig(
+        source,
+        "excel",
+        issuer=issuer,
+        mapping_version="1",
+        mapping={"employee_id": "id", **{f: f for f in FIELD_PREDICATES}},
+    )
     rows = []
     for n, (emp, spec) in enumerate(records.items(), start=2):
         values, observed_at = spec if isinstance(spec, tuple) else (spec, None)

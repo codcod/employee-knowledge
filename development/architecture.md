@@ -147,7 +147,7 @@ Initial and planned adapters:
 | Confluence | Planned | Space, page ID, page version, URL, extraction timestamp, content location |
 | Jira | Planned | Site/project, issue or user identifier, field, issue/user update time |
 | Power BI | Planned | Tenant/workspace, dataset/report, refresh timestamp, table/column/row key where available |
-| Other systems | Extension point | Stable source object ID, source version and evidence reference |
+| Other systems | Extension point: file sources register as plugins ([ADR-0011](decisions/0011-source-adapter-plugins.md)); API sources wait for EK-007 | Stable source object ID, source version and evidence reference |
 
 Do not assume that every source has a unique employee ID. If it does not, its records
 must go through identity resolution with an explicit confidence and review outcome.
@@ -499,7 +499,8 @@ employee-knowledge/
 ├── src/ek/
 │   ├── adapters/
 │   │   ├── base.py
-│   │   ├── excel.py
+│   │   ├── excel.py           # the excel kind, registered as an entry point
+│   │   ├── registry.py        # entry-point discovery (ADR-0011)
 │   │   └── connectors.py      # disabled Confluence/Jira/Power BI placeholders
 │   ├── config.py              # sources.toml loader (ADR-0007)
 │   ├── graph/store.py
