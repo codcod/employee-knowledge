@@ -67,7 +67,7 @@ Last updated: 2026-11-25
 | EK-011 | Package the ontology so ek installs as a regular dependency | yes — merged to main (local fast-forward, no MR, no remote; 6f307c1..4f023ea) |
 | EK-012 | Add an extension point for third-party source adapters | yes — merged to main (PR #6, 65396fc, https://github.com/codcod/employee-knowledge/commit/65396fc) |
 | EK-013 | Choose a licence and a project-owned ontology namespace | yes — merged to main (local fast-forward, no MR, no remote; 753a9ca..7de854c) |
-| EK-015 | Escape source and config text in CLI output | no — publish-gated |
+| EK-015 | Escape source and config text in CLI output | yes — merged to main (PR #7, 1c64926, https://github.com/codcod/employee-knowledge/commit/1c64926) |
 
 ## DROPPED
 
