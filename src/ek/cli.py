@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import re
 import typing as tp
 from datetime import UTC, datetime
 from pathlib import Path
@@ -8,7 +9,6 @@ from pathlib import Path
 import typer
 from rdflib import URIRef
 from rich import print
-from rich.markup import escape
 from rich.table import Table
 from rich.text import Text
 
@@ -41,6 +41,28 @@ def _today():
     return datetime.now(UTC).date()
 
 
+_CONTROL = re.compile(r"[\x00-\x08\x0a-\x1f\x7f-\x9f]")  # Cc except tab
+
+
+def _clean(value: object) -> str:
+    """External text as written, but with control characters other than tab shown
+    as visible escapes (\\x1b, \\n), so they never reach the terminal raw."""
+    return _CONTROL.sub(lambda m: m[0].encode("unicode_escape").decode(), str(value))
+
+
+def _say(*parts: str | tuple[str, str]) -> None:
+    """Print as Text: not parsed for Rich markup or emoji. A part is text, or
+    (text, style)."""
+    print(
+        Text.assemble(
+            *(
+                (_clean(p[0]), p[1]) if isinstance(p, tuple) else _clean(p)
+                for p in parts
+            )
+        )
+    )
+
+
 PolicyPath = tp.Annotated[
     Path | None,
     typer.Option(
@@ -57,22 +79,21 @@ ConfigPath = tp.Annotated[
 def _policy(path: Path | None, config: Path) -> Policy | None:
     """The authority policy, or None when the default file is absent. Exits 1 when
     it is invalid, or named with --policy and missing: never fall back to no policy
-    (ADR-0010). Policy text is escaped: it is not Rich markup."""
+    (ADR-0010). Policy text is printed as written: it is not Rich markup."""
     try:
         if path is not None and not path.exists():
             raise PolicyError(f"{path}: policy file not found")
         path = path or DEFAULT_POLICY
         policy = load_policy(path, set(load_sources(config))) if path.exists() else None
     except (PolicyError, ConfigError) as exc:
-        print(f"[red]{escape(str(exc))}[/red]")
+        _say((str(exc), "red"))
         raise typer.Exit(1) from exc
     if policy is None:
         print("No authority policy loaded; conflicts stay unresolved.")
     elif not in_force(policy, _today()):
-        print(
-            f"[yellow]Policy {escape(policy.version)} is not in force until "
-            f"{policy.effective_from}; it is treated as no policy.[/yellow]"
-        )
+        when = policy.effective_from
+        msg = f"Policy {policy.version} is not in force until {when}; it is treated as"
+        _say((f"{msg} no policy.", "yellow"))
     return policy
 
 
@@ -131,29 +152,27 @@ def _ingest(path: Path, source_id: str, config: Path, excel_only: bool = False):
         store = KnowledgeStore(store_path())
         summary = ingest(store, source, result, started)
     except (ConfigError, SourceError) as exc:
-        print(f"[red]{exc}[/red]")
+        _say((str(exc), "red"))
         raise typer.Exit(1) from exc
     except IngestError as exc:
         # A bug, not bad source data. Shapes and paths only: messages may hold values.
-        print(f"[red]{exc}. Nothing was saved.[/red]")
+        _say((f"{exc}. Nothing was saved.", "red"))
         for f in exc.findings:
-            print(f"[red]  {f.shape} {f.path or ''}[/red]")
+            _say((f"  {f.shape} {f.path or ''}", "red"))
         raise typer.Exit(2) from exc
     store.save()
-    print(
-        f"[green]Run {summary.run} completed:[/green] {summary.observations} "
-        f"observations of {summary.assertions} assertions "
-        f"({summary.new_assertions} new, added to the untrusted graph)."
+    _say(
+        (f"Run {summary.run} completed:", "green"),
+        f" {summary.observations} observations of {summary.assertions} assertions "
+        f"({summary.new_assertions} new, added to the untrusted graph).",
     )
-    print(f"File sha256 {result.sha256}")
+    _say(f"File sha256 {result.sha256}")
     if summary.value_violations:
-        print(
-            f"[yellow]{summary.value_violations} observations failed value "
-            "validation; they are stored and flagged.[/yellow]"
-        )
+        msg = f"{summary.value_violations} observations failed value validation;"
+        _say((f"{msg} they are stored and flagged.", "yellow"))
     # References and reasons only: no cell values, so no employee data on screen.
     for q in result.quarantined:
-        print(f"[yellow]Quarantined {q.source_reference}: {q.reason}[/yellow]")
+        _say((f"Quarantined {q.source_reference}: {q.reason}", "yellow"))
 
 
 def _short(iri: str) -> str:
@@ -183,7 +202,7 @@ def report(policy: PolicyPath = None, config: ConfigPath = DEFAULT_CONFIG):
         return t
 
     def row(f):
-        return (
+        cells = (
             f["employee_id"],
             _short(f["property"]),
             f["value"],
@@ -191,6 +210,7 @@ def report(policy: PolicyPath = None, config: ConfigPath = DEFAULT_CONFIG):
             f["status"],
             _flags(f),
         )
+        return [Text(_clean(c)) for c in cells]
 
     if data["discrepancies"]:
         t = table("Discrepancies", [])
@@ -203,13 +223,13 @@ def report(policy: PolicyPath = None, config: ConfigPath = DEFAULT_CONFIG):
         print(t)
         # Outside the table, so a long rationale does not wrap into the cells.
         for item in data["discrepancies"]:
-            print(escape(_policy_line(data, item)))
+            _say(_policy_line(data, item))
     else:
         print("[green]No conflicting values detected.[/green]")
     if data["not_observed"]:
         print(table("Not observed in the latest run", map(row, data["not_observed"])))
     if data["findings"]:
-        # References and rationales only, no values. Source text is not Rich markup.
+        # References and rationales only, no values.
         t = Table(title="Data-quality findings")
         for heading in ("Category", "Employee", "Property", "Evidence", "Rationale"):
             t.add_column(heading)
@@ -220,13 +240,14 @@ def report(policy: PolicyPath = None, config: ConfigPath = DEFAULT_CONFIG):
                     for e in f["evidence"]
                 }
             )
-            t.add_row(
+            cells = (
                 f["category"],
-                escape(f.get("employee_id", "")),
+                f.get("employee_id", ""),
                 _short(f.get("property", "")),
-                escape(", ".join(refs)),
-                escape(f["rationale"]),
+                ", ".join(refs),
+                f["rationale"],
             )
+            t.add_row(*(Text(_clean(c)) for c in cells))
         print(t)
     if not (data["policy"] and data["policy"]["in_force"]):
         print("Required and freshness checks are off: no authority policy is in force.")
@@ -244,7 +265,7 @@ def report_json(
     data = build_report(KnowledgeStore(store_path()), _policy(policy, config))
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(data, indent=2), encoding="utf-8")
-    print(f"Wrote {output}")
+    _say(f"Wrote {output}")
 
 
 @app.command("query")
@@ -272,7 +293,7 @@ def query(
             property=property,
         )
     except QueryError as exc:
-        print(Text(str(exc), style="red"))
+        _say((str(exc), "red"))
         raise typer.Exit(1) from exc
     if as_json:
         typer.echo(json.dumps(results, indent=2))
@@ -288,24 +309,19 @@ def query(
     for heading in ("Employee", "Issuer", "Property", "Value", "Source", "State"):
         t.add_column(heading)
     t.add_column("References")
-    # Text cells: source values are not Rich markup.
     for item in results:
         for f in item["facts"]:
             refs = sorted({o["source_reference"] for o in f["observations"]})
-            t.add_row(
-                *map(
-                    Text,
-                    (
-                        f["employee_id"],
-                        f["issuer"],
-                        _short(f["property"]),
-                        f["value"],
-                        _short(f["source"]),
-                        f["status"],
-                        ", ".join(refs),
-                    ),
-                )
+            cells = (
+                f["employee_id"],
+                f["issuer"],
+                _short(f["property"]),
+                f["value"],
+                _short(f["source"]),
+                f["status"],
+                ", ".join(refs),
             )
+            t.add_row(*(Text(_clean(c)) for c in cells))
         if item["conflict"]:
             t.add_row("", "", "", Text("conflicting values; none is picked", "red"))
         if item["facts"]:
@@ -315,10 +331,10 @@ def query(
         where = f"{item['employee_id']} ({item['issuer']}) {_short(item['property'])}"
         n = item.get("untrusted_candidates", 0)
         if not item["facts"]:
-            print(Text(f"{where}: no trusted value.", "yellow"))
+            _say((f"{where}: no trusted value.", "yellow"))
         if n:
-            print(
-                Text(
+            _say(
+                (
                     f"{where}: {n} unaccepted value(s) not shown; use --scope all",
                     "yellow",
                 )
@@ -350,15 +366,15 @@ def _review(assertion, action, reviewer, reason, policy, config, superseded_by=N
             policy_version=version,
         )
     except ReviewError as exc:
-        print(f"[red]{exc}[/red]")
+        _say((str(exc), "red"))
         raise typer.Exit(1) from exc
     store.save()
-    print(
-        f"[green]{label(outcome.from_state)} -> {label(outcome.to_state)}[/green]; "
-        f"event {outcome.event} recorded in the audit graph (policy {escape(version)})."
+    _say(
+        (f"{label(outcome.from_state)} -> {label(outcome.to_state)}", "green"),
+        f"; event {outcome.event} recorded in the audit graph (policy {version}).",
     )
     for other in outcome.accepted_conflicts:
-        print(f"[yellow]Also accepted with a different value: {other}[/yellow]")
+        _say((f"Also accepted with a different value: {other}", "yellow"))
 
 
 @review_app.command("accept")
@@ -429,7 +445,7 @@ def rebuild_projection(
     store = KnowledgeStore(store_path())
     mismatches = store.check_projection()
     for assertion, graph, state in mismatches:
-        print(f"[yellow]{assertion} is in {graph} but is {label(state)}[/yellow]")
+        _say((f"{assertion} is in {graph} but is {label(state)}", "yellow"))
     if check:
         if mismatches:
             raise typer.Exit(1)

@@ -450,6 +450,10 @@ the start.
 - Apply data classification and retention rules to AI prompts and model-provider use; do
   not send employee data to an external model without explicit approval and appropriate
   contractual/security controls.
+- The CLI prints external text (source values, references, configuration, policy and
+  adapter messages, command arguments) without interpreting it as markup, and shows
+  control characters other than tab as visible escapes. Unicode format characters,
+  such as bidi overrides, are passed through unchanged.
 
 A production implementation needs an access-control design before real data is
 connected. A local prototype's reviewer string is not an authentication mechanism.

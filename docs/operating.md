@@ -143,6 +143,14 @@ unchanged. `reports/` is git-ignored.
 
 The report shows employee data. Treat it like the store.
 
+Every command prints text from sources, configuration and policy files, adapters and
+command arguments as written. Brackets such as `[bold]` and shortcodes such as
+`:warning:` are not interpreted. Control characters other than tab are shown as escapes,
+such as `\x1b` for ESC and `\n` for a line break, so they never reach the terminal.
+JSON output (`report-json`, `query --json`) carries the original text. A source value
+that holds the literal characters `\x1b` looks the same as an escaped ESC; use the JSON
+output to tell them apart.
+
 ### Review an assertion
 
 ```bash
