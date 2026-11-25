@@ -38,6 +38,7 @@ Last updated: 2026-11-25
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
+| EK-015 | Escape source and config text in CLI output | medium | low | S | [] |  |
 
 ## TO DO (impact order, per child)
 
@@ -46,8 +47,7 @@ Last updated: 2026-11-25
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
 | EK-014 | Record the data owner's answers to the architecture review | high | medium | M | [EK-001] |  |
-| EK-015 | Escape source and config text in CLI output | medium | low | S | [] |  |
-| EK-010 | Add source onboarding and operational controls | medium | medium | M | [] |  |
+| EK-010 | Add source onboarding and operational controls | medium | medium | M | [EK-007, EK-014] |  |
 | EK-006 | Design and prototype constrained natural-language-to-SPARQL | medium | high | L | [] |  |
 | EK-007 | Implement Confluence read-only adapter | medium | medium-high | L | [] |  |
 | EK-008 | Implement Jira read-only adapter | medium | medium-high | L | [] |  |

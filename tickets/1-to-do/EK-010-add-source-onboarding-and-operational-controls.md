@@ -2,7 +2,7 @@
 id: EK-010
 title: Add source onboarding and operational controls
 project: employee-knowledge
-depends-on: []
+depends-on: [EK-007, EK-014]
 spawned-by: []
 impact: medium
 complexity: medium
@@ -21,6 +21,16 @@ Roadmap task: Task-018 in `development/roadmap.md`.
 
 Document connector credentials, scopes, scheduling, retries, rate limits, retention, source offboarding and audit. Retention depends on EK-014 (§13 question 8). Serves EK-007, EK-008 and EK-009. Milestone M2.
 
+Refinement deferred (owner decision 2026-11-25). Credentials, scopes, scheduling, retries
+and rate limits apply only to API connectors, and EK-007 designs the first one and its
+non-file provenance (ADR-0011). Retention, correction and deletion wait on the data
+owner's §13 Q8 (EK-014). Refine this ticket once both are done. Then also cover, for file
+sources: an onboarding record (the `docs/source-onboarding.md` checklist answered per
+source), offboarding (disabling a source in `sources.toml`; what happens to its assertions
+and runs follows the Q8 answer and must not delete evidence silently), and an audit of
+configuration changes (`sources.toml`, `mapping_version`, policy). Plugin source kinds
+(ADR-0011) follow the same controls.
+
 Acceptance: a new source can be onboarded through documented configuration and review without code changes where possible.
 
 ## Implementation Plan
@@ -36,3 +46,4 @@ Acceptance: a new source can be onboarded through documented configuration and r
 - 2026-11-18 — created (TO DO). source: chat: migrated from roadmap Task-018 when Brine was set up
 - 2026-11-19 — description patched (EK-001 review, step 8): the §13 answers are recorded by EK-014, split from EK-001
 - 2026-11-25 — impact sweep (EK-012 review): `docs/source-onboarding.md` gained "Adding a source kind from another package" (plugin rules, dependency instructions); fold operational controls for plugin kinds in there
+- 2026-11-25 — refinement deferred (owner decision): depends-on set to [EK-007, EK-014]; connector controls need EK-007's connector, retention needs EK-014's Q8 answer. File-source offboarding, onboarding record and config audit noted in the Description for then
