@@ -1,6 +1,7 @@
 # ADR-0011: Source adapter plugins
 
-- **Status:** Proposed (2026-11-25), with EK-012.
+- **Status:** Accepted (2026-11-25). The project owner approved EK-012 and merged it
+  (PR #6). First proposed 2026-11-25.
 - **Related:** ADR-0003, ADR-0006, ADR-0007. Amends ADR-0007's schema table.
 
 ## Context
