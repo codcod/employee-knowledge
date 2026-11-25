@@ -278,7 +278,7 @@ uv run employee-knowledge ingest examples/employees.xlsx --source-id jira-user-d
 
 ## Review
 
-Reviewed 2026-11-25 on `feat/EK-012-adapter-plugins` (b273e8b, 7832a02; inline fixes 3b7c03a).
+Reviewed 2026-11-25 on `feat/EK-012-adapter-plugins` (9f4721e, dfbc680; inline fixes bd53058).
 
 - [x] Reviewer independence settled (step 0): **delegated**. The orchestrator wrote the branch, so a fresh sub-agent with no hand in it ran steps 1 to 4a (hunt: angle 7 only). The orchestrator re-verified its 4 findings: its F1 (false sha256) by its reproduction, its F4 by a second reproduction, its F2 and F3 by reading the code.
 - [x] In-tree stale-branch check (step 0a): `pickle doctor` warned that the branch had the ticket in `3-in-development`. Rebased onto `main`, and it is now clean. The reviewer's own run was also clean.
@@ -305,10 +305,10 @@ Reviewed 2026-11-25 on `feat/EK-012-adapter-plugins` (b273e8b, 7832a02; inline f
 | F4 | non-blocking | design | noted | An entry point that names a class instead of an instance loads fine, then fails later with a `TypeError` traceback | Traced: `registry.load_adapter` returns `ep.load()` unchecked | Check that `parse_options` and `read` are callable after loading |
 | F5 | non-blocking | correctness | noted | A directory as the path gives an `IsADirectoryError` traceback. This existed already in `ingest-excel` and `ingest` inherits it | Traced: `SourceFile` has no `dir_okay=False`, and `ExcelAdapter.read` calls `read_bytes()` outside its caught exceptions | `dir_okay=False` on `SourceFile` |
 | F6 | non-blocking | design | noted | `_ingest` looks the plugin up again after config parsing has loaded it, and relies on "enabled sources always have a plugin" | `src/ek/cli.py` `_ingest` | Carry the resolved plugin on the parsed source, if a second lookup ever matters |
-| F7 | non-blocking | docs-gap | fixed inline | The plugin rules banned employee data in `SourceError` messages but not in quarantine reasons or record references, which are printed too | `docs/source-onboarding.md` "Rules for a source kind"; `src/ek/cli.py` prints both | Clause added (3b7c03a) |
-| F8 | non-blocking | spec-unclear | fixed inline | ADR-0011 said `report`, `report-json` and `review` always load plugins. They do so only when a policy is loaded | `src/ek/cli.py` `_policy`: `load_sources` runs only `if path.exists()` | Reworded (3b7c03a) |
+| F7 | non-blocking | docs-gap | fixed inline | The plugin rules banned employee data in `SourceError` messages but not in quarantine reasons or record references, which are printed too | `docs/source-onboarding.md` "Rules for a source kind"; `src/ek/cli.py` prints both | Clause added (bd53058) |
+| F8 | non-blocking | spec-unclear | fixed inline | ADR-0011 said `report`, `report-json` and `review` always load plugins. They do so only when a policy is loaded | `src/ek/cli.py` `_policy`: `load_sources` runs only `if path.exists()` | Reworded (bd53058) |
 
-### Rework fix record — round 1 (commit 72708cf)
+### Rework fix record — round 1 (commit a9fd653)
 
 - F1: `ingest._check_records` refuses a record whose employee ID is not non-blank, trimmed str, an ID on two records of one read, a non-str value, and an unmapped field. Each is a `SourceError` naming source references only. Tests: `test_ingest_refuses_unusable_records` (7 cases).
 - F2: `cli._check_file` re-hashes the file after `read` and refuses a mismatched `sha256` or a `file_name` other than `path.name`. Tests: `test_plugin_file_provenance_is_verified` (lie-sha, abs-name). The former bad-sha exit-2 test became `test_plugin_model_finding_aborts_and_saves_nothing`, which uses a blank source reference, so the model-finding path is still covered.
