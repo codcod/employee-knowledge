@@ -310,6 +310,7 @@ Checklist:
 - [x] Findings recorded (step 5).
 - [x] Ticket moved to `6-done/` (step 6b).
 - [x] Other references (step 7): roadmap Task-010 progress line and architecture §4.6/§10/§13 Q15 updated on the branch; EK-015 and EK-014 carry their folded items.
+- [x] Approval and publish (step 9): the owner approved two tidied commits and the PR attributes. `main` was pushed first; the in-tree base check then printed nothing. Branch pushed, PR #4 opened.
 - [x] Impact sweep (step 8): no ticket lists EK-003 in `depends-on:`. EK-005 (soft coupling) can later carry findings in query results; its plan does not assume anything EK-003 changed. EK-014 already carries the freshness question.
 
 ## History
@@ -327,3 +328,4 @@ Checklist:
 - 2026-11-24 — REWORK → IN REVIEW: findings fixed (round 1)
 - 2026-11-24 — plan amended inline: decision 4's freshness-unknown text now matches review F2 (any unusable time gives freshness-unknown) (review R3)
 - 2026-11-24 — IN REVIEW → DONE: review round 2 clean: 0 blocking; round 1 F1–F4 fixed; dispositions 6 noted, 5 fixed inline, 3 folded (EK-015), 0 new tickets
+- 2026-11-25 — published (owner-approved): tidied to 2 commits (8b4b139 feat, 78851e0 docs, history kept), pushed `main` first, PR https://github.com/codcod/employee-knowledge/pull/4. Merging is the owner's
