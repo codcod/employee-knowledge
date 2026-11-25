@@ -101,12 +101,14 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
      ones. It must raise `ConfigError` on an unknown or invalid key, so unknown keys stay
      refused, and it returns the validated options.
    - `read` is read-only and returns `file_name` and `sha256` of the exact bytes it read.
+     It raises `SourceError` for a source it cannot read (gate G1).
 4. **The common keys are the same for every enabled source:** `id`, `kind`, `enabled`,
    `issuer`, `mapping_version` and `mapping`. `mapping` must include `employee_id`, and
    its fields must come from `FIELD_PREDICATES`, so plugins cannot add properties
    (ontology first). `SourceConfig` gains `options: dict[str, object]`, and `sheet`
    moves into Excel's options (`source.options.get("sheet")`). `sources.toml` is
-   unchanged for users.
+   unchanged for users. A disabled source of a plugin kind is validated in full, as a
+   disabled Excel source is today; placeholder kinds keep only their own keys (gate G3).
 5. **The disabled placeholder kinds stay.** `confluence`, `jira` and `powerbi` keep
    their keys in `config.py` and are accepted only with `enabled = false`, and only when
    no plugin registers that kind. A plugin registering one of them, as EK-007 will, takes
@@ -126,11 +128,17 @@ None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and che
    refusing non-Excel sources, and both commands share one internal function.
 8. **Provenance and validation do not change.** A plugin's `ReadResult` goes through
    `ek.ingest.ingest` and SHACL unchanged, so a missing or malformed `sha256` or
-   `file_name` is a model finding, and nothing is saved (exit 2).
+   `file_name` is a model finding, and nothing is saved (exit 2). `ingest` refuses a
+   record value whose field is not in the source's `mapping` with a `SourceError`
+   (exit 1, nothing saved), so a plugin cannot add properties (gate G1).
 9. **An ADR records the contract.** It is the next free number, "Source adapter
    plugins". It covers decisions 1–8, the file-sources-only limit, and that the API
-   source-version design is left to EK-007 (owner decision 2026-11-21). ADR-0007's
-   header gains a pointer to it.
+   source-version design is left to EK-007 (owner decision 2026-11-21). Its
+   Consequences note that `report`, `report-json` and `review` also load configured
+   plugins, so a broken plugin makes them exit 1 (gate G4). It is ADR-0011, status
+   Proposed until merge. ADR-0007's header says "Amended by ADR-0011" (gate G5).
+10. **The summary line says "File sha256"** in both commands, not "Workbook sha256"
+    (gate G7).
 
 ### Tasks
 
@@ -188,6 +196,7 @@ New `src/ek/adapters/registry.py` (about 30 lines):
     `ek:sha256`, observations with the CSV source references, assertions in the untrusted
     graph only, and validation results on the observations.
   - A variant plugin that returns a bad `sha256` exits 2, and no store file is written.
+  - A plugin returning a value field outside the mapping exits 1, nothing written (G1).
   - `ingest-excel` on the CSV source exits 1, with "not an Excel source".
 - **Excel unchanged (regression):** ingesting `examples/employees.xlsx` through `ingest`
   and through `ingest-excel` into two fresh stores gives identical assertion URI sets and
@@ -228,6 +237,8 @@ uv run employee-knowledge ingest examples/employees.xlsx --source-id jira-user-d
   - the onboarding checklist the new kind still needs;
   - how a downstream package depends on ek, as a wheel or with
     `uv add "employee-knowledge @ git+<repo-url>@<tag>"` (folded item F4).
+- `docs/source-onboarding.md`: also fix the existing key table, which says `kind` is
+  `excel` and lists `sheet` as a common key (gate G5).
 - `docs/operating.md`: the `ingest` command, with `ingest-excel` kept as the
   Excel-specific form.
 - `development/`:
@@ -271,3 +282,6 @@ uv run employee-knowledge ingest examples/employees.xlsx --source-id jira-user-d
 - 2026-11-18 — EK-011 review: folded docs item F4 (how a downstream package depends on ek)
 - 2026-11-21 — refined. Owner decisions: file sources only (API source-version ADR goes to EK-007); generic `ingest PATH --source-id`, ingest-excel kept. Grades unchanged. Plan written
 - 2026-11-21 — TO DO → READY: plan complete
+- 2026-11-25 — applicability gate (independent sub-agent): no blocking findings; 7 non-blocking. G1, G3, G4, G5, G7 inline; G2 noted on EK-015; G6 note-and-close (hand-built EntryPoints have no dist; stale egg-info would show a false duplicate if distributions() were iterated). Owner approved routing
+- 2026-11-25 — plan amended inline: decisions 3, 4, 8, 9 and new 10 (plugin read raises SourceError; ingest refuses unmapped fields; disabled plugin sources fully validated; ADR-0011 Proposed with G4 consequence and ADR-0007 'amended by' pointer; 'File sha256'), docs step fixes the existing key table, one extra test
+- 2026-11-25 — READY → IN DEVELOPMENT: picked up
