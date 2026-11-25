@@ -62,8 +62,8 @@ must print nothing. Merging is the human's.
 ### Prerequisite gate (hard)
 
 None: `depends-on: []`. Start from a clean tree on an up-to-date `main`, and check that
-`uv run pytest` is green first. If EK-004 or EK-003 merged meanwhile, rebase onto them;
-the report changes they make do not affect this module.
+`uv run pytest` is green first. EK-003 and EK-004 are already merged into `main`, so
+branching from `main` is enough; their report changes do not affect this module.
 
 ### Confirmed design decisions (do not deviate without asking)
 
@@ -73,8 +73,8 @@ the report changes they make do not affect this module.
    with values `trusted` and `all`. `scope` is keyword-only and has no default. On the
    CLI, `--scope` is a required option, so leaving it out is a usage error (exit 2).
 2. **Trusted scope reads facts from `urn:employee-knowledge:graph:trusted` only.** As
-   defence in depth, it also checks each returned assertion's derived state is
-   `Accepted`, using `store.state`. On any mismatch it raises
+   defence in depth, it first runs `store.check_projection()`, which compares every
+   assertion's graph with its derived state. On any mismatch it raises
    `QueryError("projection out of date; run rebuild-projection")` and returns nothing. A
    broken projection must never leak untrusted values.
 3. **Untrusted candidates are counted and never shown in trusted scope.** For each
@@ -108,9 +108,11 @@ the report changes they make do not affect this module.
 9. **CLI.** `employee-knowledge query --scope trusted|all [--employee-id ID] [--issuer
    I] [--property P] [--json]`:
    - It prints a Rich table: Employee, Issuer, Property, Value, Source, State,
-     References.
+     References. Cells holding source text are `rich.text.Text`, so markup and emoji
+     in the source are never interpreted (the EK-015 issue).
    - In trusted scope it adds a line per group with `untrusted_candidates > 0`: "N
-     untrusted candidate value(s) not shown; use --scope all".
+     unaccepted value(s) not shown; use --scope all". "Unaccepted" means any state
+     other than Accepted: Candidate, NeedsEvidence, Rejected or Superseded.
    - The table title states the scope and the graphs read.
    - `--json` prints the result list as JSON to stdout.
    - A `QueryError` exits 1.
@@ -128,9 +130,10 @@ nearest equivalent. `build_report` keeps its output byte-identical, and the exis
 
 - Define `Scope`, `QueryError(ValueError)` and `query_facts(...)`, following decisions
   1–8.
-- Use `store.dataset.graph(TRUSTED_GRAPH)` for trusted reads, through a new read-only
-  `KnowledgeStore` method such as `assertions_in(graph_id)`, so graph access stays in
-  `src/ek/graph/store.py`.
+- Read assertions through the existing `store.assertions()`, which yields the graph
+  each one is in, and keep only the trusted graph's for trusted scope. Run the leak
+  guard through the existing `store.check_projection()`. No new graph-access method is
+  needed, and graph access stays in `src/ek/graph/store.py`.
 - Add `latest_review` through a read-only store helper over `store.events(assertion)` and
   `store.event(e)`.
 
@@ -154,6 +157,8 @@ All synthetic. Cover:
   the trusted graph directly in the test. Trusted scope must raise `QueryError`, and
   `all` scope still works.
 - **All scope:** both values, each with its state, and `conflict` is true.
+- **Escaping:** the CLI table prints a bracketed synthetic value such as `[/x]`
+  literally, without a `MarkupError`.
 - **Accepted conflict:** two accepted different values give trusted `conflict` true and
   both shown.
 - **Missing trusted value:** a candidate-only group in trusted scope has `facts == []`
@@ -182,12 +187,12 @@ uv run employee-knowledge ingest-excel examples/employees-directory.xlsx --sourc
 uv run employee-knowledge query --employee-id E-1002 --property department
 #   exit 2: missing --scope
 uv run employee-knowledge query --scope trusted --employee-id E-1002 --property department
-#   no trusted value; "2 untrusted candidate value(s) not shown"
+#   no trusted value; "2 unaccepted value(s) not shown"
 uv run employee-knowledge report-json --output "$(mktemp -d)/r.json"
 #   accept the hr-export E-1002 department assertion ("People"):
 uv run employee-knowledge review accept <uri> --reviewer demo --reason "checked"
 uv run employee-knowledge query --scope trusted --employee-id E-1002 --property department
-#   People (hr-export, Accepted), "1 untrusted candidate value(s) not shown"; "Product" absent
+#   People (hr-export, Accepted), "1 unaccepted value(s) not shown"; "Product" absent
 uv run employee-knowledge query --scope all --employee-id E-1002 --property department --json
 #   both values with states Accepted / Candidate, conflict true
 ```
@@ -237,3 +242,6 @@ uv run employee-knowledge query --scope all --employee-id E-1002 --property depa
 - 2026-11-19 — description patched (EK-001 review, step 8): the §13 answers are recorded by EK-014, split from EK-001
 - 2026-11-21 — refined. Owner decisions: generic fact lookup with mandatory scope now; named business-question templates wait for §13 Q10 (EK-014). Grades unchanged. Plan written
 - 2026-11-21 — TO DO → READY: plan complete
+- 2026-11-25 — applicability gate (independent sub-agent): no blocking findings; 4 non-blocking, routing approved by the owner. (1) the query table prints source text unescaped (EK-015 class) → inline; (2) the "rebase onto EK-003/EK-004" step is stale, since both are merged → note-and-close; (3) `store.assertions()` and `store.check_projection()` already exist → inline, reuse them; (4) "untrusted candidate" could be read as the Candidate state only → inline, say "unaccepted"
+- 2026-11-25 — plan amended inline: the prerequisite gate says EK-003/EK-004 are merged; decision 2's leak guard uses `store.check_projection()`; decision 9 uses `rich.text.Text` cells and the "N unaccepted value(s) not shown" wording; Task 2 reuses `store.assertions()` and adds no graph-access method; Task 4 adds an escaping test; the acceptance comments use the new wording
+- 2026-11-25 — READY → IN DEVELOPMENT: picked up

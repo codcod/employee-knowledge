@@ -13,10 +13,11 @@ Last updated: 2026-11-25
 
 ## IN DEVELOPMENT
 
-### employee-knowledge (0/1)
+### employee-knowledge (1/1)
 
 | id | title | depends-on |
 |---|---|---|
+| EK-005 | Add trusted-only and evidence-inclusive query interfaces | [] |
 
 ## IN REVIEW
 
@@ -38,7 +39,6 @@ Last updated: 2026-11-25
 
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
-| EK-005 | Add trusted-only and evidence-inclusive query interfaces | high | medium | M | [] |  |
 | EK-012 | Add an extension point for third-party source adapters | high | medium | M | [] |  |
 
 ## TO DO (impact order, per child)
