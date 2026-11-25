@@ -285,3 +285,4 @@ uv run employee-knowledge ingest examples/employees.xlsx --source-id jira-user-d
 - 2026-11-25 — applicability gate (independent sub-agent): no blocking findings; 7 non-blocking. G1, G3, G4, G5, G7 inline; G2 noted on EK-015; G6 note-and-close (hand-built EntryPoints have no dist; stale egg-info would show a false duplicate if distributions() were iterated). Owner approved routing
 - 2026-11-25 — plan amended inline: decisions 3, 4, 8, 9 and new 10 (plugin read raises SourceError; ingest refuses unmapped fields; disabled plugin sources fully validated; ADR-0011 Proposed with G4 consequence and ADR-0007 'amended by' pointer; 'File sha256'), docs step fixes the existing key table, one extra test
 - 2026-11-25 — READY → IN DEVELOPMENT: picked up
+- 2026-11-25 — IN DEVELOPMENT → IN REVIEW: acceptance green
