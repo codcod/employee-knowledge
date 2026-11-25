@@ -20,11 +20,10 @@ Last updated: 2026-11-25
 
 ## IN REVIEW
 
-### employee-knowledge (1/1)
+### employee-knowledge (0/1)
 
 | id | title | depends-on |
 |---|---|---|
-| EK-015 | Escape source and config text in CLI output | [] |
 
 ## REWORK
 
@@ -47,6 +46,7 @@ Last updated: 2026-11-25
 | id | title | impact | complexity | cost | depends-on | family |
 |---|---|---|---|---|---|---|
 | EK-014 | Record the data owner's answers to the architecture review | high | medium | M | [EK-001] |  |
+| EK-016 | Harden CLI error output: surrogates and traceback locals | medium | low | S | [] |  |
 | EK-010 | Add source onboarding and operational controls | medium | medium | M | [EK-007, EK-014] |  |
 | EK-006 | Design and prototype constrained natural-language-to-SPARQL | medium | high | L | [] |  |
 | EK-007 | Implement Confluence read-only adapter | medium | medium-high | L | [] |  |
@@ -67,6 +67,7 @@ Last updated: 2026-11-25
 | EK-011 | Package the ontology so ek installs as a regular dependency | yes — merged to main (local fast-forward, no MR, no remote; 6f307c1..4f023ea) |
 | EK-012 | Add an extension point for third-party source adapters | yes — merged to main (PR #6, 65396fc, https://github.com/codcod/employee-knowledge/commit/65396fc) |
 | EK-013 | Choose a licence and a project-owned ontology namespace | yes — merged to main (local fast-forward, no MR, no remote; 753a9ca..7de854c) |
+| EK-015 | Escape source and config text in CLI output | no — publish-gated |
 
 ## DROPPED
 

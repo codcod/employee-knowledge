@@ -214,7 +214,33 @@ before, apart from the fix.
 
 ## Review
 
-<!-- empty until IN REVIEW -->
+Review of `feat/EK-015-escape-cli-output` (9621470, plus the review's test commit 17b65de),
+2026-11-25. Audits by a delegated independent reviewer (fresh sub-agent); classification,
+dispositions and the move by the orchestrator, who also wrote the branch.
+
+| id | severity | class | disposition | description | evidence | suggestion |
+|---|---|---|---|---|---|---|
+| F1 | non-blocking | correctness | new ticket (EK-016) | An undecodable argv or file-name byte becomes a lone surrogate (Cs), which `_clean` does not escape (decision 2 is Cc only), so printing it raises `UnicodeEncodeError`. Pre-existing | Reproduced on branch and on `main`: `ingest x.xlsx --config <synthetic> --source-id $'\xff'` exits 1 with a `UnicodeEncodeError` traceback instead of the `Unknown source id` message | Escape `\ud800-\udfff` in `_CONTROL`; needs owner sign-off, as it amends decision 2 |
+| F2 | non-blocking | correctness | new ticket (EK-016) | typer's pretty tracebacks show local variables by default, so any uncaught error can print employee data to the terminal (AGENTS.md §4, architecture §8). Pre-existing | `typer.Typer(help=...)` at `src/ek/cli.py:33` with no `pretty_exceptions_show_locals`; the F1 traceback printed its frames' locals | `pretty_exceptions_show_locals=False` |
+| F3 | non-blocking | test-gap | fixed inline | No test for `report-json --output` with a hostile path, a site decision 1 names | `tests/test_cli_output.py` had no case; added `test_report_json_output_path_is_shown_as_written` (17b65de), which fails on the old `cli.py` (6 failed) and passes on the branch | — |
+| F4 | non-blocking | design | noted | Text printed through `_say` is no longer coloured by Rich's ReprHighlighter, so numbers and URIs in the run summary, sha256 and review lines lose highlighting on a colour terminal | `Console(force_terminal=True).print(str)` colours `42`; `print(Text(...))` does not. Invisible in CliRunner and JSON output | None: not highlighting external text is the intent of decision 1 |
+| F5 | non-blocking | design | noted | Two messages are split into a `msg` prefix plus a tuple (`_policy` not-in-force, `_ingest` value violations) only to fit 88 columns | `src/ek/cli.py`, `_policy` and `_ingest` | None: an implicit concatenation inside the tuple trips ruff ISC004, which is why it was split; wording is unchanged |
+
+Dispositions: 1 fixed inline (F3), 2 new ticket (F1, F2, batched as EK-016), 2 noted (F4, F5), 0 folded.
+cost: estimated S, actual S
+
+- [x] Reviewer independence settled (step 0): delegated to a fresh independent sub-agent; no delegated findings discarded. Its F1 was split into F1 and F2 above (separable dispositions)
+- [x] In-tree stale-branch check (step 0a): `pickle doctor` warned of the branch's stale ticket copy; rebased onto `main`, then 0 warnings
+- [x] Implementation audit (steps 1, 2): acceptance test re-run verbatim and green (`test_cli_output.py` 22 then 28 passed, suite 267 then 273 passed, ruff clean, `grep escape(` empty); the manual run on the examples gave output identical to `main`; Tasks 1–2 and decisions 1–6 met
+- [x] Correctness hunt (step 3): angle hunt, one pass over all eight angles by the delegated reviewer, no sub-agents (`complexity: low`), angle 7 inside the pass; no host tool run. F1 reproduced by hand on branch and `main`
+- [x] Consistency audit (step 4): project-wide grep; no contract drift
+- [x] Documentation audit (step 4a): `docs/operating.md` paragraph and architecture §8 bullet present; whole-tree sweep clean; no docs build configured
+- [x] Docs-readability pass (step 4b): conscious skip, since no dedicated reviewer is configured and the changed prose is two short paragraphs
+- [x] Findings recorded with severity, class and disposition; summary and cost lines present (step 5)
+- [x] Ticket moved to `tickets/6-done/`; History appended (step 6)
+- [x] Other references (step 7): `development/architecture.md` §8 already updated on the branch; no other ticket or doc references EK-015 behaviour
+- [x] Impact sweep (step 8): no ticket in `1-to-do/` or `2-ready/` references EK-015 apart from EK-016, which it spawned
+- [x] Summary, commit message and PR attributes approved by the owner (fold into one commit, push, open PR) (step 9)
 
 ## History
 
@@ -229,3 +255,4 @@ before, apart from the fix.
 - 2026-11-25 — plan amended inline: applicability gate G1–G3 (non-blocking, owner-approved). G1: openpyxl rejects `[`/`:` in sheet titles, so the markup goes in the workbook file name and the sheet title carries a C1 character. G2: a policy has no rationale field, so `[/x]` enters the rationale through an authoritative source id, and a second future-dated policy covers the not-in-force line. G3: the JSON check is on `json.loads` output plus no raw ESC byte
 - 2026-11-25 — READY → IN DEVELOPMENT: picked up; gate G1–G3 non-blocking, plan amended inline
 - 2026-11-25 — IN DEVELOPMENT → IN REVIEW: acceptance green
+- 2026-11-25 — IN REVIEW → DONE: review: no blocking findings; 1 fixed inline (F3), 2 new ticket (F1, F2 -> EK-016), 2 noted (F4, F5)
