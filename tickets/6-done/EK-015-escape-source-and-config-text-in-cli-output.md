@@ -256,3 +256,4 @@ cost: estimated S, actual S
 - 2026-11-25 — READY → IN DEVELOPMENT: picked up; gate G1–G3 non-blocking, plan amended inline
 - 2026-11-25 — IN DEVELOPMENT → IN REVIEW: acceptance green
 - 2026-11-25 — IN REVIEW → DONE: review: no blocking findings; 1 fixed inline (F3), 2 new ticket (F1, F2 -> EK-016), 2 noted (F4, F5)
+- 2026-11-25 — published: owner approved one atomic commit (ffe3f76 fix; review test commit folded in); main pushed first, in-tree base check clean; branch pushed, PR #7 opened (https://github.com/codcod/employee-knowledge/pull/7). Awaiting the human merge
