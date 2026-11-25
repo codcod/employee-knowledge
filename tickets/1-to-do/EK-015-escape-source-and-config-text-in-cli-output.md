@@ -63,3 +63,4 @@ bracketed synthetic values in every printing command.
 - 2026-11-24 — created (TO DO). source: review: EK-004 review finding F9 (pre-existing unescaped Rich markup in CLI output; owner chose a new ticket)
 - 2026-11-24 — folded EK-004 re-review R1 (emoji shortcodes in policy text are still rendered)
 - 2026-11-24 — folded EK-003 review F11–F13 (unescaped report tables, terminal control characters, emoji in the findings table)
+- 2026-11-25 — note (EK-005 applicability gate): the new `query` command builds its table cells as `rich.text.Text`, so markup and emoji shortcodes in source text are not interpreted there. Terminal control characters are not stripped yet; include `query` in that fix
